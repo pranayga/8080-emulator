@@ -14,3 +14,33 @@
 #include "debug.h"
 #include "cpu_8080.h"
 
+cpu_state* init_cpu_8080(uint16_t pc){
+    // Malloc a new struct
+    cpu_state* cpu = (cpu_state*)calloc(1, sizeof(cpu_state));
+    cpu->PC = pc;
+    return;
+}
+
+int exec_inst(cpu_state* cpu){
+    WARN("Unimplemented.\n");
+    exit(-2);
+}
+
+void print_state(const cpu_state cpu){
+    printf("CPU State Dump:\n");
+    printf("======GP======\n");
+    printf("B:%x\n", cpu.B);
+    printf("C:%x\n", cpu.C);
+    printf("D:%x\n", cpu.D);
+    printf("E:%x\n", cpu.E);
+    printf("H:%x\n", cpu.H);
+    printf("L:%x\n", cpu.L);
+    printf("=====SPCL=====\n");
+    printf("ACC:%x\n", cpu.ACC);
+    printf("PSW:%x\n", cpu.PSW);
+    printf("SP:%d\n", cpu.SP);
+    printf("PC:%d\n", cpu.PC);
+    printf("======IMG=====\n");
+    printf("Base:%p\n", cpu.B);
+    printf("==============\n");
+}

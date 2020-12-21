@@ -28,7 +28,7 @@ typedef struct {
     uint8_t L;      /**< Register 5, Pair H */
     ///@}
     // TODO: Add The memory ref reg 6!?
-    uint8_t A;      /**< Register 7 */
+    uint8_t ACC;    /**< Register 7 */
     uint8_t PSW;    /**< Program Status Word */
 
     ///@{
