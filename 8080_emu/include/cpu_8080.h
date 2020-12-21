@@ -39,21 +39,20 @@ typedef struct {
 
     ///@{
     /** Additional state to make emulation smoother */
-    uintptr_t base; /**< Base pointer, points to start of 16K memeory chunck */
+    uintptr_t base; /**< Base pointer, points to start of 16K memory chunk */
     ///@}
 } cpu_state;
 
 /**
  * 
- * @brief Initialize a new cpu_8080 instance structure.
+ * @brief Initialize a new cpu_8080 instance structure. Everything is initialized to 0.
  * 
- * @param pc Program counter initializaiton
+ * @param pc Program counter initialization
  * 
  * @return cpu_state* Pointer to the Malloced CPU state.
  * @note 
  * - the user is responsible for freeing the memory (for the CPU) once it's done
- * - currently expects the text section to be loaded into the lower 16 bit addressable
- * virtual memory.
+ * - expects base to be initialized by the user to a 64KB aligned memory
  */
 cpu_state* init_cpu_8080(uint16_t pc);
 
