@@ -36,7 +36,40 @@ typedef struct {
     uint16_t SP;    /**< Stack Pointer */
     uint16_t PC;    /**< Program Counter */
     ///@}
+
+    ///@{
+    /** Additional state to make emulation smoother */
+    uintptr_t base; /**< Base pointer, points to start of 16K memeory chunck */
+    ///@}
 } cpu_state;
 
+/**
+ * 
+ * @brief Initialize a new cpu_8080 instance structure.
+ * 
+ * @param pc Program counter initializaiton
+ * 
+ * @return cpu_state* Pointer to the Malloced CPU state.
+ * @note 
+ * - the user is responsible for freeing the memory (for the CPU) once it's done
+ * - currently expects the text section to be loaded into the lower 16 bit addressable
+ * virtual memory.
+ */
+cpu_state* init_cpu_8080(uint16_t pc);
+
+/**
+ * @brief Executes the instruction pc is pointing to after incrementing it.
+ * 
+ * @param cpu 
+ * @return int 
+ */
+int exec_inst(cpu_state* cpu);
+
+/**
+ * @brief Print the state of CPU
+ * 
+ * @param cpu 
+ */
+void print_state(const cpu_state cpu);
 
 #endif
