@@ -39,3 +39,30 @@ Next, I would recommend you to read the programming manual (91 Page one). The fi
 ### Disassembling 8080 (JIT style) :laughing: 
 
 Well, it's not really JIT. But we'll only extend it just in time like we ROM tries to use an instruction that hasn't been implemented yet. This would help us with debugging (smaller scope to look for bugs) and visible progress!
+
+> Note: While I would highly recommend starting from scratch since you'll have to give the code organization and management some thought.
+
+> To make getting started easier, I can share my workspace setup with basic file structure, makefile etc which you can extend as we go together :smile:.
+
+## Emulation Bookmarks
+- [Emulator 101 - Welcome](http://www.emulator101.com/)
+- [HOWTO: Writing a Computer Emulator](http://fms.komkon.org/EMUL8/HOWTO.html)
+- [Writing a CHIP-8 emulator with Rust and WebAssembly](https://blog.scottlogic.com/2017/12/13/chip8-emulator-webassembly-rust.html)
+- [How to build an emulator - Codemotion Magazine](https://www.codemotion.com/magazine/dev-hub/gamedev/how-to-build-an-emulator/)
+- [LemonBoy/Space-Invaders-Emulator: Fuck PS3 we haz Space Invaders!](https://github.com/LemonBoy/Space-Invaders-Emulator)
+1. JS
+    - [How to Create Your Very Own Chip-8 Emulator](https://www.freecodecamp.org/news/creating-your-very-own-chip-8-emulator/)
+    - [Imran Nazar: GameBoy Emulation in JavaScript: Timers](http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-Timers)
+1. C++
+    - [How to write an emulator (CHIP-8 interpreter) — Multigesture.net](http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/)
+1. GameBoy
+    - [GameBoyProgManVer1.1.pdf](https://ia803208.us.archive.org/9/items/GameBoyProgManVer1.1/GameBoyProgManVer1.1.pdf)
+    - [Cinoop](https://cturt.github.io/cinoop.html)
+1.NES
+    - [Programming guide - Nesdev wiki](http://wiki.nesdev.com/w/index.php/Programming_guide)
+    - [nesdev.com/NES emulator development guide.txt](http://nesdev.com/NES%20emulator%20development%20guide.txt)
+    - [Emulators 101: How To Write A Program That Functions Like An NES CPU | Hackaday](https://hackaday.com/2012/10/12/emulators-101-how-to-write-a-program-that-functions-like-an-nes-cpu/)
+    - [Writing your own NES emulator - overview | yizhang82’s blog](https://yizhang82.dev/nes-emu-overview)
+1. SDL C
+    - [Lazy Foo' Productions - Beginning Game Programming v2.0](https://lazyfoo.net/tutorials/SDL/index.php#Hello%20SDL)
+    - [SDL 2.0 Tutorial-00: The Basic Sturcture | Stephen Meier](https://stephenmeier.net/2014/08/10/sdl-2-0-tutorial-00-the-basic-sturcture/)
