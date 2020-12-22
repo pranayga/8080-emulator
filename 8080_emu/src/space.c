@@ -131,4 +131,6 @@ int check_open_roms(char* path, int* FDs){
         WARN("open failure");
         return 0;
    }
+
+   return 1;
 }
