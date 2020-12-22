@@ -23,13 +23,13 @@
 #define ROM_CHUNK_SIZE 0x800
 
 // Major Helper Functions
-int mmap_invaders(char *path, intptr_t base);
+int* mmap_invaders(char *path, void* base);
 // Helper of Helpers Functions
 int check_open_roms(char *path, int* FDs);
 
 
 int main(){
-    debug_print("PRKS 8080 Emulator to run Space Invaders....");
+    DEBUG_PRINT("PRKS 8080 Emulator to run Space Invaders....");
     WARN(0, "Hello from Warning....")
 
     // initializing a New CPU instance
@@ -39,7 +39,7 @@ int main(){
     // memory Map the ROM
     char* rom_path = "./invaders_rom";
     int* rom_FDs;
-    if ((rom_FDs = load_invaders(rom_path, cpu->base)) == NULL){
+    if ((rom_FDs = mmap_invaders(rom_path, cpu->base)) == NULL){
         fprintf(stderr, "Critical Error: Rom Load Failed.\n");
         exit(-1);
     }
@@ -48,7 +48,7 @@ int main(){
 
     // Unmap the files and free the buffers.
     for(uint8_t itr=0; itr<NUM_ROM_FILES; itr++){ // Map h, g, f ,e <0-3>
-        unmapstatus(cpu->base+(ROM_CHUNK_SIZE*itr), ROM_CHUNK_SIZE); // UnMap invaders.x
+        munmap(cpu->base+(ROM_CHUNK_SIZE*itr), ROM_CHUNK_SIZE); // UnMap invaders.x
         close(rom_FDs[itr]);
     }
     free(cpu->base);
@@ -66,7 +66,7 @@ int main(){
  * @param base pointer to the CPU instance executing the ROM
  * @return int* NULL if fail, array of file descriptors if pass
  */
-int* load_invaders(char *path, intptr_t base){
+int* mmap_invaders(char *path, void* base){
     ASSERT(base!=NULL);
     ASSERT(path!=NULL)
     DEBUG_PRINT("Invaders Path: %s, BasePTR: %p", path, base);

@@ -48,4 +48,4 @@ setup: invaders.zip
 ######### Clean UP Rules ##############
 clean:
 	-rm invaders
-	-@rm -rf $(BUILD_DIR) core
+	-rm -rf $(BUILD_DIR) core

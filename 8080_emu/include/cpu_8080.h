@@ -39,7 +39,7 @@ typedef struct {
 
     ///@{
     /** Additional state to make emulation smoother */
-    uintptr_t base; /**< Base pointer, points to start of 16K memory chunk */
+    void* base; /**< Base pointer, points to start of 16K memory chunk */
     ///@}
 } cpu_state;
 

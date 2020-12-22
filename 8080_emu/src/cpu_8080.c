@@ -11,17 +11,20 @@
 
 #include <stdlib.h>
 #include <inttypes.h>
+#include <stdio.h>
 #include "debug.h"
 #include "cpu_8080.h"
+
+#define UNUSED __attribute__((unused))
 
 cpu_state* init_cpu_8080(uint16_t pc){
     // Malloc a new struct
     cpu_state* cpu = (cpu_state*)calloc(1, sizeof(cpu_state));
     cpu->PC = pc;
-    return;
+    return cpu;
 }
 
-int exec_inst(cpu_state* cpu){
+int exec_inst(UNUSED cpu_state* cpu){
     WARN("Unimplemented.\n");
     exit(-2);
 }
@@ -41,6 +44,6 @@ void print_state(const cpu_state cpu){
     printf("SP:%d\n", cpu.SP);
     printf("PC:%d\n", cpu.PC);
     printf("======IMG=====\n");
-    printf("Base:%p\n", cpu.B);
+    printf("Base:%p\n", cpu.base);
     printf("==============\n");
 }
