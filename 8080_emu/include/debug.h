@@ -16,24 +16,14 @@
 #ifdef DEBUG
 
 /**
- * @brief      When the condition X is false, a breakpoint is generated.
- *
- * @param      X     Condition to test
- */
-#define ASSERT( X ){\
-  if ( !(X) ){\
-    breakpoint();\
-  }\
-}
-
-/**
  * @brief      Logs the Line, File and Fun onto STDERR
  *
  * @param      ...   Variadic inputs for fprintf
  */
-#define DEBUG_PRINT( ... ){\
-  fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, \
-                                __LINE__, __func__, __VA_ARGS__);\
+#define DEBUG_PRINT( fmt, args... ){ \
+  fprintf(stderr, "DEBUG: %s:%d:%s(): ", __FILE__, \
+                                __LINE__, __func__);\
+  fprintf(stderr, fmt, args );\
 }
 
 /**
@@ -42,10 +32,11 @@
  * @param      X     Condition to test.
  * @param      ...   variadic inputs for fprintf
  */
-#define WARN( X, ... ){\
+#define WARN( X, fmt, args... ){ \
   if ( !(X) ){\
-      fprintf(stderr, "WARN::%s:%d:%s(): " fmt, __FILE__, \
-                                __LINE__, __func__, __VA_ARGS__);\
+      fprintf(stderr, "WARN: %s:%d:%s(): ", __FILE__, \
+                                __LINE__, __func__);\
+      fprintf(stderr, fmt, args );\
   }\
 }
 
@@ -57,7 +48,6 @@
  * @param      ...   Variadic unused, removed by compiler
  */
 //{@
-#define ASSERT( ... ) do {} while( 0 );
 #define DEBUG_PRINT( ... ) do {} while( 0 );
 #define WARN( ... ) do {} while( 0 );
 //@}

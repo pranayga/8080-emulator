@@ -16,11 +16,13 @@
 #include <inttypes.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <assert.h>
 #include "cpu_8080.h"
 #include "debug.h"
 
-#define NUM_ROM_FILES 4
-#define ROM_CHUNK_SIZE 0x800
+#define NUM_ROM_FILES   4
+#define ROM_CHUNK_SIZE  0x800
+#define TWO_POW_SIXTEEN 1<<15
 
 // Major Helper Functions
 int* mmap_invaders(char *path, void* base);
@@ -29,12 +31,12 @@ int check_open_roms(char *path, int* FDs);
 
 
 int main(){
-    DEBUG_PRINT("PRKS 8080 Emulator to run Space Invaders....");
-    WARN(0, "Hello from Warning....")
+    DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
+    WARN(0, "%s\n", "Hello from Warning....")
 
     // initializing a New CPU instance
-    cpu_state* cpu = init_cpu_8080(0);      // For now don't know where PC initially points
-    cpu->base = aligned_alloc(16, 1<<15);   // Alloc aligned 64 KB
+    cpu_state* cpu = init_cpu_8080(0);              // For now don't know where PC initially points
+    cpu->base = aligned_alloc(TWO_POW_SIXTEEN, UINT16_MAX);   // Alloc aligned 64 KB
 
     // memory Map the ROM
     char* rom_path = "./invaders_rom";
@@ -67,14 +69,14 @@ int main(){
  * @return int* NULL if fail, array of file descriptors if pass
  */
 int* mmap_invaders(char *path, void* base){
-    ASSERT(base!=NULL);
-    ASSERT(path!=NULL)
-    DEBUG_PRINT("Invaders Path: %s, BasePTR: %p", path, base);
+    assert(base!=NULL);
+    assert(path!=NULL);
+    DEBUG_PRINT("Invaders Path: %s, BasePTR: %p\n", path, base);
 
     // Check & Open All Roms
     int* FDs = (int *)calloc(NUM_ROM_FILES, sizeof(int));
     if(!check_open_roms(path, FDs)){
-        WARN(0, "ROM open failed.\n");
+        WARN(0, "%s\n", "ROM open failed.\n");
         return 0;
     }
 
@@ -94,41 +96,41 @@ int check_open_roms(char* path, int* FDs){
     
     sprintf(file_path, "%s/%s", path, "invaders.h");
     if (stat(file_path, &mmapstat) == -1) {
-        WARN("stat failure");
+        WARN(0, "%s\n", "stat failure");
         return 0;
     }
     if ((FDs[0] = open(file_path, O_RDONLY)) == -1) {
-        WARN("open failure");
+        WARN(0, "%s\n", "open failure");
         return 0;
    }
 
    sprintf(file_path, "%s/%s", path, "invaders.g");
     if (stat(file_path, &mmapstat) == -1) {
-        WARN("stat failure");
+        WARN(0, "%s\n", "stat failure");
         return 0;
     }
     if ((FDs[1] = open(file_path, O_RDONLY)) == -1) {
-        WARN("open failure");
+        WARN(0, "%s\n", "open failure");
         return 0;
    }
 
    sprintf(file_path, "%s/%s", path, "invaders.f");
     if (stat(file_path, &mmapstat) == -1) {
-        WARN("stat failure");
+        WARN(0, "%s\n", "stat failure");
         return 0;
     }
     if ((FDs[2] = open(file_path, O_RDONLY)) == -1) {
-        WARN("open failure");
+        WARN(0, "%s\n", "open failure");
         return 0;
    }
 
    sprintf(file_path, "%s/%s", path, "invaders.e");
     if (stat(file_path, &mmapstat) == -1) {
-        WARN("stat failure");
+        WARN(0, "%s\n", "stat failure");
         return 0;
     }
     if ((FDs[3] = open(file_path, O_RDONLY)) == -1) {
-        WARN("open failure");
+        WARN(0, "%s\n", "open failure");
         return 0;
    }
 

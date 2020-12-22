@@ -25,7 +25,7 @@ cpu_state* init_cpu_8080(uint16_t pc){
 }
 
 int exec_inst(UNUSED cpu_state* cpu){
-    WARN("Unimplemented.\n");
+    WARN(0, "%s\n", "Unimplemented.");
     exit(-2);
 }
 

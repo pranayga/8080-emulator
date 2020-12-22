@@ -14,23 +14,27 @@ SRC_DIR		= src
 DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/debug.h
 
 ###### Build Specs #####################
-CFLAGS					= -I -g
+CFLAGS					= 
 COMPILER_ERROR_FLAGS 	= -Wall -Werror -Wshadow -Wextra -Wunused
-LIBS 		=
+LIBS 					=
 # DEBUGGING is enabled by default, you can reduce binary size by disabling the
 # DEBUGGING
 ifeq ($(DEBUG), 1)
-	DEFINE_MACROS = -DDEBUG -g
-	OPTIMIZATION  = -O0
+	DEFINE_MACROS 	= -DDEBUG -g
+	OPTIMIZATION  	= -O0
 else
-	OPTIMIZATION = -O3
+	OPTIMIZATION 	= -O3
 endif
+
+CFLAGS += $(OPTIMIZATION) $(DEFINE_MACROS)
 
 
 ######### Main Build ##################
-.PHONY: build setup clean doc
+.PHONY: build setup compile clean doc extractROM
 
-build: $(BUILD_DIR)/$(OBJ_DIR)/space.o $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o
+build: setup compile
+
+compile: $(BUILD_DIR)/$(OBJ_DIR)/space.o $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o
 	$(CC) -o invaders $^ $(CFLAGS)
 
 $(BUILD_DIR)/$(OBJ_DIR)/space.o: $(SRC_DIR)/space.c $(DEPS)
@@ -40,10 +44,12 @@ $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o: $(SRC_DIR)/cpu_8080.c $(DEPS)
 	$(CC) -c -o $@ -I$(INC_DIR) $< $(CFLAGS) $(COMPILER_ERROR_FLAGS)
 
 ######### RPM Extraction Rules ########
-setup: invaders.zip
+setup:
 	$(MKDIR_P) $(BUILD_DIR)
 	$(MKDIR_P) $(BUILD_DIR)/$(OBJ_DIR)
-	unzip invaders.zip -d ./$(BUILD_DIR)/invaders_rom
+	
+extractROM: invaders.zip
+	unzip invaders.zip -d ./invaders_rom
 
 ######### Clean UP Rules ##############
 clean:
