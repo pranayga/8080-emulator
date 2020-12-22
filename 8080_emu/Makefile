@@ -30,7 +30,10 @@ CFLAGS += $(OPTIMIZATION) $(DEFINE_MACROS)
 
 
 ######### Main Build ##################
-.PHONY: build setup compile clean doc extractROM
+.PHONY: debug build setup compile clean doc extractROM
+
+debug: build
+	gdb ./invaders
 
 build: setup compile
 
