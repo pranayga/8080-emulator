@@ -21,7 +21,7 @@
  * @param      ...   Variadic inputs for fprintf
  */
 #define DEBUG_PRINT( fmt, args... ){ \
-  fprintf(stderr, "DEBUG: %s:%d:%s(): ", __FILE__, \
+  fprintf(stderr, "DEBUG: %-15s:%d:%-15s():", __FILE__, \
                                 __LINE__, __func__);\
   fprintf(stderr, fmt, args );\
 }
@@ -34,7 +34,7 @@
  */
 #define WARN( X, fmt, args... ){ \
   if ( !(X) ){\
-      fprintf(stderr, "WARN: %s:%d:%s(): ", __FILE__, \
+      fprintf(stderr, "WARN:  %-15s:%d:%-15s():", __FILE__, \
                                 __LINE__, __func__);\
       fprintf(stderr, fmt, args );\
   }\

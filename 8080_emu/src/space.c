@@ -46,7 +46,10 @@ int main(){
         exit(-1);
     }
 
-    // TODO: Do the exec here.
+    // Set PC to start of the ROM Offset
+    cpu->PC = 0;
+    // Exec ROM FILE
+    while(exec_inst(cpu)==0){}
 
     // Unmap the files and free the buffers.
     for(uint8_t itr=0; itr<NUM_ROM_FILES; itr++){ // Map h, g, f ,e <0-3>
