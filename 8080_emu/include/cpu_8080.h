@@ -65,6 +65,28 @@ cpu_state* init_cpu_8080(uint16_t pc);
 int exec_inst(cpu_state* cpu);
 
 /**
+ * @brief Lowest level memory read access abstraction. Typecasts
+ * the offset to void* + base to get the actual pointer. Populates the
+ * value into val.
+ * 
+ * @param offset from the base ptr in bytes
+ * @param val to read into (pointer)
+ * @param cpu cpu context to exec with
+ */
+void mem_read(const cpu_state cpu, uint16_t offset, uint8_t* val);
+
+/**
+ * @brief Lowest level memory write access abstraction. Typecasts
+ * the offset to void* + base to get the actual pointer. Populates from
+ * val into the memory.
+ * 
+ * @param offset from the base ptr in bytes
+ * @param val to write onto memory
+ * @param cpu cpu context to exec with
+ */
+void mem_write(const cpu_state cpu, uint16_t offset, uint8_t val);
+
+/**
  * @brief Print the state of CPU
  * 
  * @param cpu 

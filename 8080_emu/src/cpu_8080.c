@@ -47,3 +47,13 @@ void print_state(const cpu_state cpu){
     printf("Base:%p\n", cpu.base);
     printf("==============\n");
 }
+
+void mem_read(const cpu_state cpu, uint16_t offset, uint8_t* val){
+    uint8_t *target_addr = (uint8_t *)(cpu.base + offset);
+    *val = *target_addr;
+}
+
+void mem_write(const cpu_state cpu, uint16_t offset, uint8_t val){
+    uint8_t *target_addr = (uint8_t *)(cpu.base + offset);
+    *target_addr = val;
+}
