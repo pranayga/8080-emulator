@@ -20,8 +20,10 @@
 #include "cpu_8080.h"
 #include "debug.h"
 
+#define ALIGNED_PREFIX (1<<16)
+
 // Major Helper Functions
-int mmap_invaders(char *path, cpu_state* cpu);
+int copy_invaders_rom(char *path, cpu_state* cpu);
 
 int main(){
     DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
@@ -33,7 +35,7 @@ int main(){
     // memory Map the ROM
     char* rom_path = "./invaders_rom";
     int rom_FD;
-    if ((rom_FD = mmap_invaders(rom_path, cpu)) == -1){
+    if ((rom_FD = copy_invaders_rom(rom_path, cpu)) == -1){
         fprintf(stderr, "Critical Error: Rom Load Failed.\n");
         exit(-1);
     }
@@ -43,10 +45,9 @@ int main(){
     // Exec ROM FILE
     while(exec_inst(cpu)==1){}
 
-    // Unmap the files and free the buffers.
-    munmap(cpu->mem.base, cpu->rom_size); // UnMap invaders.x
+    // free the buffers.
     close(rom_FD);
-    
+    free(cpu->mem.base);
     free(cpu);
     return 0;
 }
@@ -54,14 +55,14 @@ int main(){
 // Helper Functions
 
 /**
- * @brief Memory maps the invaders ROM into the correct memory locations.
+ * @brief Copies the invaders ROM into the correct memory locations.
  * The way memory is mapped is documented at: http://www.emutalk.net/threads/38177-Space-Invaders
  * 
- * @param path to the folder containing the 4 ROM Chunks
+ * @param path to the folder containing the ROM
  * @param cpu pointer to the CPU instance executing the ROM
  * @return int -1 if fail, array of file descriptors if pass
  */
-int mmap_invaders(char *path, cpu_state* cpu){
+int copy_invaders_rom(char *path, cpu_state* cpu){
     assert(cpu!=NULL);
     assert(path!=NULL);
 
@@ -82,10 +83,10 @@ int mmap_invaders(char *path, cpu_state* cpu){
    }
 
     // Memory mapping
-    if ((cpu->mem.base = mmap((caddr_t)0, cpu->rom_size, PROT_READ, 
-                                    MAP_PRIVATE, FD, 0)) ==  MAP_FAILED){
-            WARN(0, "%s\n", "MAPPING FAILED.\n");
-            return 0;
+    cpu->mem.base = aligned_alloc(ALIGNED_PREFIX, UINT16_MAX);
+    if (read(FD, cpu->mem.base, cpu->rom_size) == 0){
+        WARN(0, "%s\n", "ROM_LOAD_FAILED.\n");
+        return 0;
     }// Map invaders.efgh
     
     return FD;
