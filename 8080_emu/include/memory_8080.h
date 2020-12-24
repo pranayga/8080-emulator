@@ -1,3 +1,13 @@
+/**
+ * @file memory_8080.h
+ * @author Pranay Garg (pranayga@andrew.cmu.edu)
+ * @brief Memory abstraction for 8080 cpu.
+ * @version 0.1
+ * @date 2020-12-24
+ * 
+ * @copyright Copyright (c) 2020
+ * 
+ */
 #ifndef MEMORY_8080_H
 #define MEMORY_8080_H
 

@@ -1,3 +1,13 @@
+/**
+ * @file memory_8080.c
+ * @author Pranay Garg (pranayga@andrew.cmu.edu)
+ * @brief Memory wrapper codebase
+ * @version 0.1
+ * @date 2020-12-24
+ * 
+ * @copyright Copyright (c) 2020
+ * 
+ */
 #include <stdlib.h>
 #include "memory_8080.h"
 
