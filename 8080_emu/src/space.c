@@ -44,7 +44,7 @@ int main(){
     while(exec_inst(cpu)==1){}
 
     // Unmap the files and free the buffers.
-    munmap(cpu->base, cpu->rom_size); // UnMap invaders.x
+    munmap(cpu->mem.base, cpu->rom_size); // UnMap invaders.x
     close(rom_FD);
     
     free(cpu);
@@ -82,7 +82,7 @@ int mmap_invaders(char *path, cpu_state* cpu){
    }
 
     // Memory mapping
-    if ((cpu->base = mmap((caddr_t)0, cpu->rom_size, PROT_READ, 
+    if ((cpu->mem.base = mmap((caddr_t)0, cpu->rom_size, PROT_READ, 
                                     MAP_PRIVATE, FD, 0)) ==  MAP_FAILED){
             WARN(0, "%s\n", "MAPPING FAILED.\n");
             return 0;

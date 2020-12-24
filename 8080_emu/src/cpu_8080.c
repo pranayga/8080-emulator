@@ -14,25 +14,7 @@
 #include <stdio.h>
 #include "debug.h"
 #include "cpu_8080.h"
-
-#define UNUSED __attribute__((unused))
-#define EXEC_INST()
-
-
-// Internal Helpers
-//============================================================================
-/**
- * @brief Wrapper over No Op
- * 
- * @param cpu Cpu state
- * @return int 1 of success, 0 if fail
- */
-static inline int NOP_WRAP(UNUSED cpu_state* cpu){
-    DEBUG_PRINT("%x : NOP\n", nop_instt);
-    return 1;
-}
-
-//============================================================================
+#include "opcodes_8080.h"
 
 // Main Externally visible Functions
 cpu_state* init_cpu_8080(uint16_t pc){
@@ -43,7 +25,7 @@ cpu_state* init_cpu_8080(uint16_t pc){
 }
 
 int exec_inst(UNUSED cpu_state* cpu){
-    Instruction_OPCODE Instt = mem_read(*cpu, cpu->PC);
+    Instruction_OPCODE Instt = mem_read(&cpu->mem, cpu->PC);
     switch (Instt)
     {
     case nop_instt:
@@ -74,16 +56,6 @@ void print_state(const cpu_state cpu){
     printf("PC:%d\n", cpu.PC);
     printf("Intt:%d\n", cpu.intt);
     printf("======IMG=====\n");
-    printf("Base:%p\n", cpu.base);
+    printf("Base:%p\n", cpu.mem.base);
     printf("==============\n");
-}
-
-uint8_t mem_read(const cpu_state cpu, uint16_t offset){
-    uint8_t *target_addr = (uint8_t *)((uintptr_t)cpu.base | offset);
-    return *target_addr;
-}
-
-void mem_write(const cpu_state cpu, uint16_t offset, uint8_t val){
-    uint8_t *target_addr = (uint8_t *)((uintptr_t)cpu.base | offset);
-    *target_addr = val;
 }

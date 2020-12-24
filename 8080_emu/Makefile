@@ -11,7 +11,7 @@ OBJ_DIR		= obj
 # Source Dirs
 INC_DIR		= include
 SRC_DIR		= src
-DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/debug.h
+DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/opcodes_8080.h $(INC_DIR)/debug.h $(INC_DIR)/memory_8080.h
 
 ###### Build Specs #####################
 CFLAGS					= 
@@ -41,10 +41,13 @@ debug: build
 
 build: setup compile
 
-compile: $(BUILD_DIR)/$(OBJ_DIR)/space.o $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o
+compile: $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o $(BUILD_DIR)/$(OBJ_DIR)/memory_8080.o $(BUILD_DIR)/$(OBJ_DIR)/space.o
 	$(CC) -o invaders $^ $(CFLAGS)
 
 $(BUILD_DIR)/$(OBJ_DIR)/space.o: $(SRC_DIR)/space.c $(DEPS)
+	$(CC) -c -o $@ -I$(INC_DIR) $< $(CFLAGS) $(COMPILER_ERROR_FLAGS)
+
+$(BUILD_DIR)/$(OBJ_DIR)/memory_8080.o: $(SRC_DIR)/memory_8080.c $(DEPS)
 	$(CC) -c -o $@ -I$(INC_DIR) $< $(CFLAGS) $(COMPILER_ERROR_FLAGS)
 
 $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o: $(SRC_DIR)/cpu_8080.c $(DEPS)

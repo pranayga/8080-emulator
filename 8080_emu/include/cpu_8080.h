@@ -12,6 +12,9 @@
 #define CPU_8080_H
 
 #include <inttypes.h>
+#include "memory_8080.h"
+
+#define UNUSED __attribute__((unused))
 
 /**
  * @brief program_status_word: An exdended PSW for easy checks and
@@ -52,7 +55,7 @@ typedef struct {
 
     ///@{
     /** Additional state to make emulation smoother */
-    void* base; /**< Base pointer, points to start of 16K memory chunk */
+    v_memory mem; /**< mem pointer, points to vMemeory chunck */
     uint16_t rom_size; /** Size of the ROM currenlty loaded */
     ///@}
 } cpu_state;
@@ -79,39 +82,10 @@ cpu_state* init_cpu_8080(uint16_t pc);
 int exec_inst(cpu_state* cpu);
 
 /**
- * @brief Lowest level memory read access abstraction. Typecasts
- * the offset to void* + base to get the actual pointer. Populates the
- * value into val.
- * 
- * @param offset from the base ptr in bytes
- * @param cpu cpu context to exec with
- * @return uint8_t, byte read from the memory
- */
-uint8_t mem_read(const cpu_state cpu, uint16_t offset);
-
-/**
- * @brief Lowest level memory write access abstraction. Typecasts
- * the offset to void* + base to get the actual pointer. Populates from
- * val into the memory.
- * 
- * @param offset from the base ptr in bytes
- * @param val to write onto memory
- * @param cpu cpu context to exec with
- */
-void mem_write(const cpu_state cpu, uint16_t offset, uint8_t val);
-
-/**
  * @brief Print the state of CPU
  * 
  * @param cpu 
  */
 void print_state(const cpu_state cpu);
-
-/**
- * @brief Enum of each and every opcode.
- */
-typedef enum {
-    nop_instt = 0x0,
-} Instruction_OPCODE;
 
 #endif
