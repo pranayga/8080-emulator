@@ -57,6 +57,10 @@ setup:
 	
 extractROM: invaders.zip
 	unzip invaders.zip -d ./invaders_rom
+	cat ./invaders_rom/invaders.h > ./invaders_rom/invaders.hgfe
+	cat ./invaders_rom/invaders.g >> ./invaders_rom/invaders.hgfe
+	cat ./invaders_rom/invaders.f >> ./invaders_rom/invaders.hgfe
+	cat ./invaders_rom/invaders.e >> ./invaders_rom/invaders.hgfe
 
 ######### Clean UP Rules ##############
 clean:
