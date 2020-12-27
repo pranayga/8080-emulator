@@ -54,4 +54,29 @@
 
 #endif /* DEBUG */
 
+#ifdef DECOMPILE
+
+/**
+ * @brief      LOGS decomplied opcode
+ *
+ * @param      ...   Variadic inputs for fprintf
+ */
+#define DECOMPILE_PRINT( PC, fmt, args... ){ \
+  fprintf(stdout, "%x : ", PC);\
+  fprintf(stdout, fmt, args );\
+}
+
+#else
+
+/**
+ * @brief      Stub for when flag is not passed.
+ *
+ * @param      ...   Variadic unused, removed by compiler
+ */
+//{@
+#define DECOMPILE_PRINT( ... ) do {} while( 0 );
+//@}
+
+#endif /* DECOMPILE */
+
 #endif /* _DEBUG_H_ */

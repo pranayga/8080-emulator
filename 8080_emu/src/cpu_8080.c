@@ -27,7 +27,13 @@ cpu_state* init_cpu_8080(uint16_t pc){
 int exec_inst(cpu_state* cpu){
     uint8_t Instt = mem_read(&cpu->mem, cpu->PC);
     uint16_t inital_pc_ptr = cpu->PC;
-    cpu->PC += opcode_lookup[Instt].cycle_count;
+    cpu->PC += opcode_lookup[Instt].size;
+    
+    // TODO: Remove
+    if(opcode_lookup[Instt].target_func == 0x0){
+         opcode_lookup[Instt].target_func = UNDEFINED_OP_WRAP;
+    }
+
     int ret = opcode_lookup[Instt].target_func(cpu, inital_pc_ptr, Instt);
     return ret;
 }

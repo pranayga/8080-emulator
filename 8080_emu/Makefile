@@ -3,6 +3,7 @@
 ######### Build Params #################
 DEBUG		= 1
 MKDIR_P 	= mkdir -p
+DECOMPILE	= 1
 
 # Build Dir
 BUILD_DIR	= build
@@ -24,6 +25,10 @@ ifeq ($(DEBUG), 1)
 	OPTIMIZATION  	= -O0
 else
 	OPTIMIZATION 	= -O3
+endif
+
+ifeq ($(DECOMPILE), 1)
+	DEFINE_MACROS 	+= -D DECOMPILE
 endif
 
 CFLAGS += $(OPTIMIZATION) $(DEFINE_MACROS)
