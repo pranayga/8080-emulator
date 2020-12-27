@@ -24,27 +24,12 @@ cpu_state* init_cpu_8080(uint16_t pc){
     return cpu;
 }
 
-int exec_inst(UNUSED cpu_state* cpu){
+int exec_inst(cpu_state* cpu){
     uint8_t Instt = mem_read(&cpu->mem, cpu->PC);
-    /** TODO: Eventually Switch with a functor setup. */
-    switch (Instt)
-    {
-    case 0x0: //NOP
-    case 0x8:
-        printf("%x : NOP\n", cpu->PC);
-        cpu->PC++;
-        NOP_WRAP(cpu);
-        break;
-    case 0xC3: //JMP
-        printf("%x : JMP %x\n", cpu->PC, short_mem_read(&cpu->mem, cpu->PC+1));
-        cpu->PC += 3;
-        break;
-    default:
-        printf("%x : (%x)UNKNOWN\n", cpu->PC, Instt);
-        WARN(0, "%s\n", "UNKNOWN OPCODE.");
-        return 0;
-    }
-    return 1;
+    uint16_t inital_pc_ptr = cpu->PC;
+    cpu->PC += opcode_lookup[Instt].cycle_count;
+    int ret = opcode_lookup[Instt].target_func(cpu, inital_pc_ptr, Instt);
+    return ret;
 }
 
 void print_state(const cpu_state cpu){
