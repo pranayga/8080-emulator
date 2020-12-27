@@ -25,14 +25,22 @@ cpu_state* init_cpu_8080(uint16_t pc){
 }
 
 int exec_inst(UNUSED cpu_state* cpu){
-    Instruction_OPCODE Instt = mem_read(&cpu->mem, cpu->PC);
+    uint8_t Instt = mem_read(&cpu->mem, cpu->PC);
+    /** TODO: Eventually Switch with a functor setup. */
     switch (Instt)
     {
-    case nop_instt:
+    case 0x0: //NOP
+    case 0x8:
+        printf("%x : NOP\n", cpu->PC);
         cpu->PC++;
         NOP_WRAP(cpu);
         break;
+    case 0xC3: //JMP
+        printf("%x : JMP %x\n", cpu->PC, short_mem_read(&cpu->mem, cpu->PC+1));
+        cpu->PC += 3;
+        break;
     default:
+        printf("%x : (%x)UNKNOWN\n", cpu->PC, Instt);
         WARN(0, "%s\n", "UNKNOWN OPCODE.");
         return 0;
     }

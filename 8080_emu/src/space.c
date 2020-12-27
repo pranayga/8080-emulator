@@ -43,6 +43,7 @@ int main(){
     // Set PC to start of the ROM text Offset
     cpu->PC = 0;
     // Exec ROM FILE
+    printf("Starting Exec......\n");
     while(exec_inst(cpu)==1){}
 
     // free the buffers.

@@ -23,14 +23,23 @@ typedef struct {
 
 /**
  * @brief Lowest level memory read access abstraction. Typecasts
- * the offset to void* + base to get the actual pointer. Populates the
- * value into val.
+ * the offset to void* + base to get the actual pointer. Return the value
  * 
  * @param offset from the base ptr in bytes
  * @param mem cpu's memeory context under exec
  * @return uint8_t, byte read from the memory
  */
 uint8_t mem_read(v_memory* mem, uint16_t offset);
+
+/**
+ * @brief Wrapper over memory access primitives to read a byte off
+ * the base offset void* + base. Returns the value
+ * 
+ * @param offset from the base ptr in bytes
+ * @param mem cpu's memeory context under exec
+ * @return uint16_t, short read from the memory
+ */
+uint16_t short_mem_read(v_memory* mem, uint16_t offset);
 
 /**
  * @brief Lowest level memory write access abstraction. Typecasts
@@ -42,5 +51,16 @@ uint8_t mem_read(v_memory* mem, uint16_t offset);
  * @param mem cpu's memeory context under exec
  */
 void mem_write(v_memory* mem, uint16_t offset, uint8_t val);
+
+/**
+ * @brief Wrapper over memory access primitives to read a byte off
+ * the base offset void* + base. Populates from
+ * val into the memory.
+ * 
+ * @param offset from the base ptr in bytes
+ * @param val to write onto memory
+ * @param mem cpu's memeory context under exec
+ */
+void short_mem_write(v_memory* mem, uint16_t offset, uint16_t val);
 
 #endif
