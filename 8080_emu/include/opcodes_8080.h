@@ -33,6 +33,50 @@ typedef struct {
     uint8_t size;           /**< Instruction size in bytes */
 } instt_8080_op;
 
+uint8_t* ref_byte_reg(cpu_state* cpu ,uint8_t reg_identifier){
+    switch (reg_identifier)
+    {
+    case 0x0:
+        return &cpu->B;
+    case 0x01:
+        return &cpu->C;
+    case 0x02:
+        return &cpu->D;
+    case 0x03:
+        return &cpu->E;
+    case 0x04:
+        return &cpu->H;
+    case 0x05:
+        return &cpu->L;
+    case 0x07:
+        return &cpu->ACC;
+    default:
+        ILLEGAL_OP;
+        exit(-2);
+    }
+    ILLEGAL_OP;
+    return 0x0;
+}
+
+uint16_t* ref_short_reg(cpu_state* cpu ,uint8_t reg_identifier){
+    switch (reg_identifier)
+    {
+    case 0x0:
+        return &cpu->BC;
+    case 0x01:
+        return &cpu->DE;
+    case 0x02:
+        return &cpu->HL;
+    case 0x03:
+        return &cpu->SP;
+    default:
+        ILLEGAL_OP;
+        exit(-2);
+    }
+    ILLEGAL_OP;
+    return 0x0;
+}
+
 /**
  * @brief Undefined OPCODE Functor 
  * 
@@ -60,26 +104,34 @@ int NOP_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
-int LXI_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
-    // Xfil the short Reg.
+/**
+ * @brief Load register pair immediate
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int LXI_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (0x30 & op_code) >> 4;
+    uint16_t imm_data = short_mem_read(&cpu->mem, base_PC+1);
+    uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
+    *target_dest = imm_data;
+    DECOMPILE_PRINT(base_PC, "LXI REG(%x), %x\n", reg_patt, imm_data);
+    return 1;
+}
+
+int JMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     switch (op_code)
     {
-    case 0x01:
-        cpu->BC = short_mem_read(&cpu->mem, base_PC+1);
-        DECOMPILE_PRINT(base_PC, "%s\n", "LXI BC");    
+    case 0xC3:
+        cpu->PC = short_mem_read(&cpu->mem, base_PC+1);
+        DECOMPILE_PRINT(base_PC, "JMP %x\n", cpu->PC);
         break;
-    case 0x11:
-        cpu->DE = short_mem_read(&cpu->mem, base_PC+1);
-        DECOMPILE_PRINT(base_PC, "%s\n", "LXI DE");
-        break;
-    case 0x21:
-        cpu->HL = short_mem_read(&cpu->mem, base_PC+1);
-        DECOMPILE_PRINT(base_PC, "%s\n", "LXI HL");
-        break;
-    case 0x31:
-        cpu->SP = short_mem_read(&cpu->mem, base_PC+1);
-        DECOMPILE_PRINT(base_PC, "%s\n", "LXI SP");
-        break;
+    case 0xCB:
+        DEBUG_PRINT("%s\n", "UNINIMPLEMENTED.");
+        ILLEGAL_OP;
+        exit(-3);
     default:
         ILLEGAL_OP;
         exit(-2);
@@ -87,14 +139,56 @@ int LXI_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief Move Immediate
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int MVI_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    if(op_code == 0x36){    // Type B
+        mem_write(&cpu->mem, cpu->HL, mem_read(&cpu->mem, base_PC+1));
+        DECOMPILE_PRINT(base_PC, "MVI *(HL), %x\n", mem_read(&cpu->mem, base_PC+1));
+    } else if ( (op_code & 0xC7) == 0x06 ){ // Type A
+        uint8_t reg_patt = (0x38 & op_code) >> 3;
+        uint8_t imm_data = mem_read(&cpu->mem, base_PC+1);
+        uint8_t* target_dest = ref_byte_reg(cpu, reg_patt);
+        *target_dest = imm_data;
+        DECOMPILE_PRINT(base_PC, "MVI REG(%x), %x\n", reg_patt, imm_data);
+    } else {
+        ILLEGAL_OP;
+        exit(-2);
+    }
+    return 1;
+}
+
+int CALL_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    switch (op_code)
+    {
+    case 0xCD:
+        cpu->SP -= 2;
+        short_mem_write(&cpu->mem, cpu->SP, cpu->PC);   // Saving Return Addr
+        cpu->PC = short_mem_read(&cpu->mem, base_PC+1); // Reading the new PC
+        break;
+    default:
+        // TODO: Few missing instruction not defined in the
+        // system manual.
+        ILLEGAL_OP;
+        break;
+    }
+    return 1;
+}
+
 instt_8080_op opcode_lookup[0x100] = {
-    [0x0]  = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
-    [0x1]  = {LXI_WRAP, 10, 3},
+    [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
+    [0x01] = {LXI_WRAP, 10, 3},
     // [0x2]  = {STAX_WRAP, 7, 1},
     // [0x3]  = {INX_WRAP, 5, 1},
     // [0x4]  = {INR_WRAP, 5, 1},
     // [0x5]  = {DCR_WRAP, 5, 1},
-    // [0x6]  = {MVI_WRAP, 7, 2},
+    [0x6]  = {MVI_WRAP, 7, 2},
     // [0x7]  = {RLC_WRAP, 7, 1},
     [0x8]  = {NOP_WRAP, 4, 1},
     // [0x9]  = {DAD_WRAP, 10, 1},
@@ -102,11 +196,22 @@ instt_8080_op opcode_lookup[0x100] = {
     // [0xB]  = {DCX_WRAP, 5, 1},
     // [0xC]  = {INR_WRAP, 5, 1},
     // [0xD]  = {DCR_WRAP, 5, 1},
-    // [0xE]  = {MVI_WRAP, 7, 2},
+    [0xE]  = {MVI_WRAP, 7, 2},
     // [0x10] = {RRC_WRAP, 4, 1},
-    [0x11] = {UNDEFINED_OP_WRAP, 255, 1},
-    [0x12] = {UNDEFINED_OP_WRAP, 255, 1},
-    [0x13] = {UNDEFINED_OP_WRAP, 255, 1},
+    [0x11] = {LXI_WRAP, 10, 3},
+    [0x16] = {MVI_WRAP, 7, 2},
+    [0x1E] = {MVI_WRAP, 7, 2},
+    [0x21] = {LXI_WRAP, 10, 3},
+    [0x26] = {MVI_WRAP, 7, 2},
+    [0x2E] = {MVI_WRAP, 7, 2},
+    [0x31] = {LXI_WRAP, 10, 3},
+    [0x36] = {MVI_WRAP, 10, 2},
+    [0x3E] = {MVI_WRAP, 7, 2},
+    [0xC3] = {JMP_WRAP, 10, 3},
+    [0xCD] = {CALL_WRAP, 17, 3},
+    [0xDD] = {CALL_WRAP, 17, 3},
+    [0xED] = {CALL_WRAP, 17, 3},
+    [0xFD] = {CALL_WRAP, 17, 3},
 };
 
 #endif

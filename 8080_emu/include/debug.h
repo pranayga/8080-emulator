@@ -62,7 +62,7 @@
  * @param      ...   Variadic inputs for fprintf
  */
 #define DECOMPILE_PRINT( PC, fmt, args... ){ \
-  fprintf(stdout, "%x : ", PC);\
+  fprintf(stdout, "%04x : ", PC);\
   fprintf(stdout, fmt, args );\
 }
 
