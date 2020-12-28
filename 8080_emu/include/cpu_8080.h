@@ -41,6 +41,21 @@ typedef enum {
 } flag_bits;
 
 /**
+ * @brief different condition checks for JMP, conditional OPS
+ * 
+ */
+typedef enum {
+    NZ_check    = 0x0, /** not zero (Z = 0) */
+    Z_check     = 0x1, /** zero (2 = 1) */
+    NC_check    = 0x2, /** no carry (CY = 0) */
+    C_check     = 0x3, /** carry (CY = 1) */
+    PO_check    = 0x4, /** parity odd (P = 0) */
+    PE_check    = 0x5, /** parity even (P = 1) */
+    P_check     = 0x6, /** plus (Sign = 0) */
+    M_check     = 0x7, /** minus(Sign = 1) */
+} condition_flags;
+
+/**
  * @brief cpu_state: This structure keeps runtime state of all the
  * registers in the CPU.
  */

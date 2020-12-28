@@ -63,6 +63,7 @@ uint8_t* ref_byte_reg(cpu_state* cpu ,uint8_t reg_identifier){
     case 0x07:
         return &cpu->ACC;
     default:
+        ILLEGAL_OP; // Will never reach here now.
         return (uint8_t*)-1;
     }
 }
@@ -90,6 +91,63 @@ uint16_t* ref_short_reg(cpu_state* cpu ,uint8_t reg_identifier){
         return &cpu->SP;
     default:
         return (uint16_t*)-1;
+    }
+}
+
+/**
+ * @brief perform condition check on the cpu register state
+ * 
+ * @param cpu 
+ * @param condition_identifier different condition checks for JMP, conditional OPS
+ * @return uint8_t 1 if the condition is true, 0 if false
+ */
+uint8_t condition_check(cpu_state* cpu, condition_flags condition_identifier){
+    switch (condition_identifier)
+    {
+    case NZ_check:
+        if(!cpu->PSW.zero){
+            return 1;
+        }
+        return 0;
+    case Z_check:
+        if(cpu->PSW.zero){
+            return 1;
+        }
+        return 0;
+    case NC_check:
+        if(!cpu->PSW.carry){
+            return 1;
+        }
+        return 0;
+    case C_check:
+        if(cpu->PSW.carry){
+            return 1;
+        }
+        return 0;
+    case PO_check:
+        if(!cpu->PSW.parity){
+            return 1;
+        }
+        return 0;
+    case PE_check:
+        if(cpu->PSW.parity){
+            return 1;
+        }
+        return 0;
+    case P_check:
+        if(!cpu->PSW.sign){
+            return 1;
+        }
+        return 0;
+    case M_check:
+        if(cpu->PSW.sign){
+            return 1;
+        }
+        return 0;
+    default:
+        DEBUG_PRINT("%s\n", "Unknow Condition Code.");
+        ILLEGAL_OP;
+        exit(-2);
     }
 }
 
@@ -312,12 +370,6 @@ int MOV_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     if(dest_reg != (uint8_t*)-1 && src_reg != (uint8_t*)-1){
         *dest_reg = *src_reg;
         DECOMPILE_PRINT(base_PC, "MOV REGDest(%x), REGSrc(%x)\n", dest_reg_patt, src_reg_patt);
-    } else if (dest_reg != (uint8_t*)-1 && src_reg == (uint8_t*)-1){
-        *dest_reg = mem_read(&cpu->mem, cpu->HL);
-        DECOMPILE_PRINT(base_PC, "MOV REGDest(%x), M\n", dest_reg_patt);
-    } else if (dest_reg == (uint8_t*)-1 && src_reg != (uint8_t*)-1){
-        mem_write(&cpu->mem, cpu->HL, *src_reg);
-        DECOMPILE_PRINT(base_PC, "MOV M, REGSrc(%x)\n", src_reg_patt);
     } else {
         ILLEGAL_OP;
         exit(-2);
@@ -383,6 +435,75 @@ int DCR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
         set_flags(cpu, target_data, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG );
         aux_flag_set_sub(cpu, base_data, 1);
         DECOMPILE_PRINT(base_PC, "DCR REG(%x)\n", target_reg);
+    } else {
+        ILLEGAL_OP;
+        exit(-2);
+    }
+    return 1;
+}
+
+/**
+ * @brief Conditional JMP statements
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int JCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    if((0xC7 & op_code) == 0xC2){
+        if(condition_check(cpu, (0x38 & op_code)>>3)){
+            cpu->PC = short_mem_read(&cpu->mem, base_PC+1);
+        }
+        DECOMPILE_PRINT(base_PC, "JMP Con(%x) %x\n", (0x38 & op_code)>>3, cpu->PC);
+    } else {
+        ILLEGAL_OP;
+        exit(-2);
+    }
+    return 1;
+}
+
+/**
+ * @brief (Return) 
+ * (PCl) ((SP));
+ * (PCH) ((SP) + 1);
+ * (SP) (SP) + 2;
+ * The content of the memory location whose address
+ * is specified in register SP is moved to the low-order
+ * eight bits of register PC.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int RET_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    if(op_code == 0xC9){
+        cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
+        cpu->SP -= 2;
+        DECOMPILE_PRINT(base_PC, "%s\n", "RET");
+    } else {
+        ILLEGAL_OP;
+        exit(-2);
+    }
+    return 1;
+}
+
+/**
+ * @brief Conditional version of `RET_WRAP`
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int RCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    if ((op_code & 0xC7) == 0xC0){
+        if(condition_check(cpu, (op_code & 0x38) >> 3)){
+            cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
+            cpu->SP -= 2;
+            DECOMPILE_PRINT(base_PC, "RET Cond(%x)\n", (op_code & 0x38) >> 3);
+        }
     } else {
         ILLEGAL_OP;
         exit(-2);
@@ -490,10 +611,29 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x7D] = {MOV_WRAP, 5, 1},
     [0x7E] = {MOV_WRAP, 5, 1},
     [0x7F] = {MOV_WRAP, 5, 1},
+    [0xC0] = {RCon_WRAP, 11, 1},
+    [0xC2] = {JCon_WRAP, 10, 3},
     [0xC3] = {JMP_WRAP, 10, 3},
+    [0xC8] = {RCon_WRAP, 11, 1},
+    [0xC9] = {RET_WRAP, 10, 1},
+    [0xCA] = {JCon_WRAP, 10, 3},
+    [0xCB] = {JMP_WRAP, 10, 3},
     [0xCD] = {CALL_WRAP, 17, 3},
+    [0xD0] = {RCon_WRAP, 11, 1},
+    [0xD2] = {JCon_WRAP, 10, 3},
+    [0xD8] = {RCon_WRAP, 11, 1},
+    [0xD9] = {RET_WRAP, 10, 1},
+    [0xDA] = {JCon_WRAP, 10, 3},
     [0xDD] = {CALL_WRAP, 17, 3},
+    [0xE0] = {RCon_WRAP, 11, 1},
+    [0xE2] = {JCon_WRAP, 10, 3},
+    [0xE8] = {RCon_WRAP, 11, 1},
+    [0xEA] = {JCon_WRAP, 10, 3},
     [0xED] = {CALL_WRAP, 17, 3},
+    [0xF0] = {RCon_WRAP, 11, 1},
+    [0xF2] = {JCon_WRAP, 10, 3},
+    [0xF8] = {RCon_WRAP, 11, 1},
+    [0xFA] = {JCon_WRAP, 10, 3},
     [0xFD] = {CALL_WRAP, 17, 3},
 };
 
