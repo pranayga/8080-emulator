@@ -286,16 +286,11 @@ int JMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @return int 
  */
 int MVI_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
-    if ( (op_code & 0xC7) == 0x06 ){ // Type A
-        uint8_t reg_patt = (0x38 & op_code) >> 3;
-        uint8_t imm_data = mem_read(&cpu->mem, base_PC+1);
-        uint8_t* target_dest = ref_byte_reg(cpu, reg_patt);
-        *target_dest = imm_data;
-        DECOMPILE_PRINT(base_PC, "MVI REG(%x), %x\n", reg_patt, imm_data);
-    } else {
-        ILLEGAL_OP;
-        exit(-2);
-    }
+    uint8_t reg_patt = (0x38 & op_code) >> 3;
+    uint8_t imm_data = mem_read(&cpu->mem, base_PC+1);
+    uint8_t* target_dest = ref_byte_reg(cpu, reg_patt);
+    *target_dest = imm_data;
+    DECOMPILE_PRINT(base_PC, "MVI REG(%x), %x\n", reg_patt, imm_data);
     return 1;
 }
 
@@ -367,13 +362,8 @@ int MOV_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t src_reg_patt = (0x07 & op_code);
     uint8_t *dest_reg = ref_byte_reg(cpu, dest_reg_patt);
     uint8_t *src_reg = ref_byte_reg(cpu, src_reg_patt);
-    if(dest_reg != (uint8_t*)-1 && src_reg != (uint8_t*)-1){
-        *dest_reg = *src_reg;
-        DECOMPILE_PRINT(base_PC, "MOV REGDest(%x), REGSrc(%x)\n", dest_reg_patt, src_reg_patt);
-    } else {
-        ILLEGAL_OP;
-        exit(-2);
-    }
+    *dest_reg = *src_reg;
+    DECOMPILE_PRINT(base_PC, "MOV REGDest(%x), REGSrc(%x)\n", dest_reg_patt, src_reg_patt);
     return 1;
 }
 
@@ -402,15 +392,10 @@ int HLT_WRAP(UNUSED cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_c
  * @return int 
  */
 int INX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
-    if((op_code & 0xC3) == 0x03){
-        uint8_t reg_patt = (0x30 & op_code) >> 4;
-        uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
-        *target_dest += 1;
-        DECOMPILE_PRINT(base_PC, "INX REGP(%x)\n", reg_patt);
-    }else {
-        ILLEGAL_OP;
-        exit(-2);
-    }
+    uint8_t reg_patt = (0x30 & op_code) >> 4;
+    uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
+    *target_dest += 1;
+    DECOMPILE_PRINT(base_PC, "INX REGP(%x)\n", reg_patt);
     return 1;
 }
 
@@ -424,21 +409,16 @@ int INX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @return int 
  */
 int DCR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
-    if ( (op_code & 0xC7) == 0x05 ){ // Type A
-        uint8_t target_reg = (op_code & 0x38) >> 3;
-        uint16_t target_data = *(ref_byte_reg(cpu, target_reg));
-        uint16_t base_data = target_data;
-        // Update The data
-        target_data -= 1;
-        *(ref_byte_reg(cpu, target_reg)) = (uint8_t)target_data;
-        // Update Flags
-        set_flags(cpu, target_data, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG );
-        aux_flag_set_sub(cpu, base_data, 1);
-        DECOMPILE_PRINT(base_PC, "DCR REG(%x)\n", target_reg);
-    } else {
-        ILLEGAL_OP;
-        exit(-2);
-    }
+    uint8_t target_reg = (op_code & 0x38) >> 3;
+    uint16_t target_data = *(ref_byte_reg(cpu, target_reg));
+    uint16_t base_data = target_data;
+    // Update The data
+    target_data -= 1;
+    *(ref_byte_reg(cpu, target_reg)) = (uint8_t)target_data;
+    // Update Flags
+    set_flags(cpu, target_data, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG );
+    aux_flag_set_sub(cpu, base_data, 1);
+    DECOMPILE_PRINT(base_PC, "DCR REG(%x)\n", target_reg);
     return 1;
 }
 
@@ -451,15 +431,10 @@ int DCR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @return int 
  */
 int JCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
-    if((0xC7 & op_code) == 0xC2){
-        if(condition_check(cpu, (0x38 & op_code)>>3)){
-            cpu->PC = short_mem_read(&cpu->mem, base_PC+1);
-        }
-        DECOMPILE_PRINT(base_PC, "JMP Con(%x) %x\n", (0x38 & op_code)>>3, cpu->PC);
-    } else {
-        ILLEGAL_OP;
-        exit(-2);
+    if(condition_check(cpu, (0x38 & op_code)>>3)){
+        cpu->PC = short_mem_read(&cpu->mem, base_PC+1);
     }
+    DECOMPILE_PRINT(base_PC, "JMP Con(%x) %x\n", (0x38 & op_code)>>3, cpu->PC);
     return 1;
 }
 
@@ -498,15 +473,10 @@ int RET_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @return int 
  */
 int RCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
-    if ((op_code & 0xC7) == 0xC0){
-        if(condition_check(cpu, (op_code & 0x38) >> 3)){
-            cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
-            cpu->SP -= 2;
-            DECOMPILE_PRINT(base_PC, "RET Cond(%x)\n", (op_code & 0x38) >> 3);
-        }
-    } else {
-        ILLEGAL_OP;
-        exit(-2);
+    DECOMPILE_PRINT(base_PC, "RET Cond(%x)\n", (op_code & 0x38) >> 3);
+    if(condition_check(cpu, (op_code & 0x38) >> 3)){
+        cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
+        cpu->SP -= 2;
     }
     return 1;
 }
