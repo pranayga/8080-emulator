@@ -22,6 +22,15 @@ typedef struct {
 } v_memory;
 
 /**
+ * @brief plain reference to the memory location
+ * 
+ * @param offset from the base ptr in bytes
+ * @param mem cpu's memeory context under exec
+ * @return void*, memory reference to the target location
+ */
+void* mem_ref(v_memory* mem, uint16_t offset);
+
+/**
  * @brief Lowest level memory read access abstraction. Typecasts
  * the offset to void* + base to get the actual pointer. Return the value
  * 

@@ -29,6 +29,18 @@ typedef struct {
 } program_status_word;
 
 /**
+ * @brief ENUMS for PSW_FLAGS
+ * 
+ */
+typedef enum {
+    SIGN_FLAG   = 1 << 0,
+    ZERO_FLAG   = 1 << 1,
+    AUX_FLAG    = 1 << 3,
+    PARITY_FLAG = 1 << 5,
+    CARRY_FLAG  = 1 << 7,
+} flag_bits;
+
+/**
  * @brief cpu_state: This structure keeps runtime state of all the
  * registers in the CPU.
  */
