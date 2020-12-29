@@ -610,6 +610,27 @@ int POP_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
+int DAD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (0x30 & op_code) >> 4;
+    uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
+    uint32_t temp = cpu->HL;
+    temp += *target_dest;
+    // Update HL
+    cpu->HL = temp & 0xFFFF;
+    // Set Carry Flag
+    cpu->PSW.carry = (cpu->HL < temp) ? 1 : 0;
+    DECOMPILE_PRINT(base_PC, "DAD REG(%x)\n", reg_patt);
+    return 1;
+}
+
+int XCHG_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t temp = cpu->HL;
+    cpu->HL = cpu->DE;
+    cpu->DE = temp;
+    DECOMPILE_PRINT(base_PC, "%s\n", "XCHG");
+    return 1;
+}
+
 instt_8080_op opcode_lookup[0x100] = {
     [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
     [0x01] = {LXI_WRAP, 10, 3},
@@ -620,7 +641,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x06] = {MVI_WRAP, 7, 2},
     // [0x7]  = {RLC_WRAP, 7, 1},
     [0x08] = {NOP_WRAP, 4, 1},
-    // [0x9]  = {DAD_WRAP, 10, 1},
+    [0x09] = {DAD_WRAP, 10, 1},
     [0x0A] = {LDAX_WRAP, 7, 1},
     // [0xB]  = {DCX_WRAP, 5, 1},
     // [0xC]  = {INR_WRAP, 5, 1},
@@ -631,6 +652,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x13] = {INX_WRAP, 5, 1},
     [0x15] = {DCR_WRAP, 5, 1},
     [0x16] = {MVI_WRAP, 7, 2},
+    [0x19] = {DAD_WRAP, 10, 1},
     [0x1A] = {LDAX_WRAP, 7, 1},
     [0x1D] = {DCR_WRAP, 5, 1},
     [0x1E] = {MVI_WRAP, 7, 2},
@@ -638,12 +660,14 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x23] = {INX_WRAP, 5, 1},
     [0x25] = {DCR_WRAP, 5, 1},
     [0x26] = {MVI_WRAP, 7, 2},
+    [0x29] = {DAD_WRAP, 10, 1},
     [0x2D] = {DCR_WRAP, 5, 1},
     [0x2E] = {MVI_WRAP, 7, 2},
     [0x31] = {LXI_WRAP, 10, 3},
     [0x33] = {INX_WRAP, 5, 1},
     [0x35] = {DCR_WRAP, 5, 1},
     [0x36] = {MVI_WRAP, 10, 2},
+    [0x39] = {DAD_WRAP, 10, 1},
     [0x3D] = {DCR_WRAP, 5, 1},
     [0x3E] = {MVI_WRAP, 7, 2},
     [0x40] = {MOV_WRAP, 5, 1},
@@ -742,6 +766,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xE5] = {PUSH_WRAP, 11, 1},
     [0xE8] = {RCon_WRAP, 11, 1},
     [0xEA] = {JCon_WRAP, 10, 3},
+    [0xEB] = {XCHG_WRAP, 5, 1},
     [0xED] = {CALL_WRAP, 17, 3},
     [0xF0] = {RCon_WRAP, 11, 1},
     [0xF1] = {POP_WRAP, 10, 1},
