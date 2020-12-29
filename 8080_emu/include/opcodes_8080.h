@@ -163,7 +163,7 @@ void set_flags(cpu_state* cpu ,uint32_t final_state, uint8_t flags){
         cpu->PSW.sign = (final_state & 0x80) ? 1:0;
     } 
     if (flags & ZERO_FLAG){
-        cpu->PSW.zero = final_state == 0 ? 1:0;
+        cpu->PSW.zero = (final_state & 0xFF) == 0 ? 1:0;
     }
     if (flags & AUX_FLAG){
         DEBUG_PRINT("%s\n", "AUX Flag is very specific to operation");
@@ -203,6 +203,40 @@ void aux_flag_set_sub(cpu_state* cpu, uint32_t base_val, uint32_t diff){
     } else {
         cpu->PSW.aux = 0;
     }
+}
+
+/**
+ * @brief Compress program_status_word into a uint8_t as per
+ * flag_bits
+ * 
+ * @param psw 
+ * @return uint8_t 
+ */
+uint8_t compress_PSW(program_status_word psw){
+    uint8_t status = 0;
+    status |= psw.carry ? CARRY_FLAG : 0;
+    status |= psw.aux ? AUX_FLAG : 0;
+    status |= psw.sign ? SIGN_FLAG : 0;
+    status |= psw.zero ? ZERO_FLAG : 0;
+    status |= psw.parity ? PARITY_FLAG : 0;
+    return status;
+}
+
+/**
+ * @brief Inflate the uint8_t into a program_status_word by using
+ * flag_bits as the mapping
+ * 
+ * @param status 
+ * @return program_status_word 
+ */
+program_status_word decompress_PSW(uint8_t status){
+    program_status_word new_status;
+    new_status.carry = status & CARRY_FLAG ? 1 : 0;
+    new_status.aux = status & AUX_FLAG ? 1 : 0;
+    new_status.sign = status & SIGN_FLAG ? 1 : 0;
+    new_status.zero = status & ZERO_FLAG ? 1 : 0;
+    new_status.parity = status & PARITY_FLAG ? 1 : 0;
+    return new_status;
 }
 
 /**
@@ -309,8 +343,9 @@ int CALL_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     {
     case 0xCD:
         cpu->SP -= 2;
-        short_mem_write(&cpu->mem, cpu->SP, cpu->PC);   // Saving Return Addr
-        cpu->PC = short_mem_read(&cpu->mem, base_PC+1); // Reading the new PC
+        short_mem_write(&cpu->mem, cpu->SP, cpu->PC);       // Saving Return Addr
+        cpu->PC = short_mem_read(&cpu->mem, base_PC+1);     // Reading the new PC
+        DECOMPILE_PRINT(base_PC, "CALL %x\n", cpu->PC );    // Logging
         break;
     default:
         // TODO: Few missing instruction not defined in the
@@ -481,6 +516,100 @@ int RCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief Comparison operation
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int CMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint16_t acc_reg = cpu->ACC;
+    uint16_t compare_src = *(ref_byte_reg(cpu, (op_code & 0x07)));
+    // Perform Comparison
+    uint16_t diff = acc_reg - compare_src;
+    // Update Flags
+    set_flags(cpu, diff, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG);
+    aux_flag_set_sub(cpu, acc_reg, compare_src);
+    DECOMPILE_PRINT(base_PC, "CMP REG(%x)\n", (op_code & 0x07));
+    return 1;
+}
+
+/**
+ * @brief Compare A with(-) (byte 2)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int CPI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t acc_reg = cpu->ACC;
+    uint16_t compare_src = mem_read(&cpu->mem, cpu->PC+1);
+    // Perform Comparison
+    uint16_t diff = acc_reg - compare_src;
+    // Update Flags
+    set_flags(cpu, diff, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG);
+    aux_flag_set_sub(cpu, acc_reg, compare_src);
+    DECOMPILE_PRINT(base_PC, "CPI *(%x)\n", cpu->HL);
+    return 1;
+}
+
+/**
+ * @brief The content of content register, is moved into the memory 
+ * whose address is specified by the SP. Note: for RP-11b
+ * it transforms into PUSH PSW
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int PUSH_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t reg_patt = (0x30 & op_code) >> 4;
+    // Swap out SP for PSW.
+    if(reg_patt == 0x3){
+        cpu->SP -= 2;
+        mem_write(&cpu->mem, cpu->SP, compress_PSW(cpu->PSW));
+        mem_write(&cpu->mem, cpu->SP+1, cpu->ACC);
+        DECOMPILE_PRINT(base_PC, "%s\n", "PUSH PSW");
+    } else {
+        uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
+        cpu->SP -= 2;
+        short_mem_write(&cpu->mem, cpu->SP, *target_dest);
+        DECOMPILE_PRINT(base_PC, "PUSH REGP(%x)\n", reg_patt);
+    }
+    return 1;
+}
+
+/**
+ * @brief The content of the memory location, whose address
+ * is specified by the SP is pused into content Reg. Note: for RP-11b
+ * it transforms into POP PSW
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int POP_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t reg_patt = (0x30 & op_code) >> 4;
+    // Swap out SP for PSW.
+    if(reg_patt == 0x3){
+        cpu->PSW = decompress_PSW(mem_read(&cpu->mem, cpu->SP));
+        cpu->ACC = mem_read(&cpu->mem, cpu->SP+1);
+        cpu->SP += 2;
+        DECOMPILE_PRINT(base_PC, "%s\n", "POP PSW");
+    } else {
+        uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
+        *target_dest = short_mem_read(&cpu->mem, cpu->SP);
+        cpu->SP += 2;
+        DECOMPILE_PRINT(base_PC, "POP REGP(%x)\n", reg_patt);
+    }
+    return 1;
+}
+
 instt_8080_op opcode_lookup[0x100] = {
     [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
     [0x01] = {LXI_WRAP, 10, 3},
@@ -581,30 +710,47 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x7D] = {MOV_WRAP, 5, 1},
     [0x7E] = {MOV_WRAP, 5, 1},
     [0x7F] = {MOV_WRAP, 5, 1},
+    [0xB8] = {CMP_WRAP, 4, 1},
+    [0xB9] = {CMP_WRAP, 4, 1},
+    [0xBA] = {CMP_WRAP, 4, 1},
+    [0xBB] = {CMP_WRAP, 4, 1},
+    [0xBC] = {CMP_WRAP, 4, 1},
+    [0xBD] = {CMP_WRAP, 4, 1},
+    [0xBE] = {CMP_WRAP, 4, 1},
+    [0xBF] = {CMP_WRAP, 4, 1},
     [0xC0] = {RCon_WRAP, 11, 1},
+    [0xC1] = {POP_WRAP, 10, 1},
     [0xC2] = {JCon_WRAP, 10, 3},
     [0xC3] = {JMP_WRAP, 10, 3},
+    [0xC5] = {PUSH_WRAP, 11, 1},
     [0xC8] = {RCon_WRAP, 11, 1},
     [0xC9] = {RET_WRAP, 10, 1},
     [0xCA] = {JCon_WRAP, 10, 3},
     [0xCB] = {JMP_WRAP, 10, 3},
     [0xCD] = {CALL_WRAP, 17, 3},
     [0xD0] = {RCon_WRAP, 11, 1},
+    [0xD1] = {POP_WRAP, 10, 1},
     [0xD2] = {JCon_WRAP, 10, 3},
+    [0xD5] = {PUSH_WRAP, 11, 1},
     [0xD8] = {RCon_WRAP, 11, 1},
     [0xD9] = {RET_WRAP, 10, 1},
     [0xDA] = {JCon_WRAP, 10, 3},
     [0xDD] = {CALL_WRAP, 17, 3},
     [0xE0] = {RCon_WRAP, 11, 1},
+    [0xE1] = {POP_WRAP, 10, 1},
     [0xE2] = {JCon_WRAP, 10, 3},
+    [0xE5] = {PUSH_WRAP, 11, 1},
     [0xE8] = {RCon_WRAP, 11, 1},
     [0xEA] = {JCon_WRAP, 10, 3},
     [0xED] = {CALL_WRAP, 17, 3},
     [0xF0] = {RCon_WRAP, 11, 1},
+    [0xF1] = {POP_WRAP, 10, 1},
     [0xF2] = {JCon_WRAP, 10, 3},
+    [0xF5] = {PUSH_WRAP, 11, 1},
     [0xF8] = {RCon_WRAP, 11, 1},
     [0xFA] = {JCon_WRAP, 10, 3},
     [0xFD] = {CALL_WRAP, 17, 3},
+    [0xFE] = {CPI_WRAP, 7, 2},
 };
 
 #endif
