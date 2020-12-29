@@ -118,6 +118,22 @@ cpu_state* init_cpu_8080(uint16_t pc);
 int exec_inst(cpu_state* cpu);
 
 /**
+ * @brief Function to write data to the IO port
+ * 
+ * @param port where the data is written to
+ * @param data which is written
+ */
+void io_machine_OUT(uint8_t port, uint16_t data);
+
+/**
+ * @brief Function to read a byte of data from the port
+ * 
+ * @param port from which the data is read
+ * @return uint8_t 
+ */
+uint8_t io_machine_IN(uint8_t port);
+
+/**
  * @brief Print the state of CPU
  * 
  * @param cpu 

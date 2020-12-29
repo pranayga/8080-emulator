@@ -38,6 +38,16 @@ int exec_inst(cpu_state* cpu){
     return ret;
 }
 
+void io_machine_OUT(UNUSED uint8_t port, UNUSED uint16_t data){
+    printf("UNINPLEMENTED MACHINE_OUT\n");
+    return;
+}
+
+uint8_t io_machine_IN(UNUSED uint8_t port){
+    printf("UNINPLEMENTED MACHINE_IN\n");
+    return 0x0;
+}
+
 void print_state(const cpu_state cpu){
     printf("CPU State Dump:\n");
     printf("======GP======\n");
