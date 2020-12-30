@@ -446,13 +446,14 @@ int INX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
 int DCR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t target_reg = (op_code & 0x38) >> 3;
     uint16_t target_data = *(ref_byte_reg(cpu, target_reg));
-    uint16_t base_data = target_data;
+    // uint16_t base_data = target_data;
     // Update The data
     target_data -= 1;
     *(ref_byte_reg(cpu, target_reg)) = (uint8_t)target_data;
     // Update Flags
     set_flags(cpu, target_data, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG );
-    aux_flag_set_sub(cpu, base_data, 1);
+    // TODO: Fix AUX set
+    // aux_flag_set_sub(cpu, base_data, 1);
     DECOMPILE_PRINT(base_PC, "DCR REG(%x)\n", target_reg);
     return 1;
 }
@@ -531,7 +532,8 @@ int CMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint16_t diff = acc_reg - compare_src;
     // Update Flags
     set_flags(cpu, diff, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG);
-    aux_flag_set_sub(cpu, acc_reg, compare_src);
+    // TODO: Fix AUX set
+    // aux_flag_set_sub(cpu, acc_reg, compare_src);
     DECOMPILE_PRINT(base_PC, "CMP REG(%x)\n", (op_code & 0x07));
     return 1;
 }
@@ -551,7 +553,8 @@ int CPI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t diff = acc_reg - compare_src;
     // Update Flags
     set_flags(cpu, diff, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG);
-    aux_flag_set_sub(cpu, acc_reg, compare_src);
+    // TODO: Fix AUX set
+    // aux_flag_set_sub(cpu, acc_reg, compare_src);
     DECOMPILE_PRINT(base_PC, "CPI *(%x)\n", cpu->HL);
     return 1;
 }
@@ -610,6 +613,18 @@ int POP_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief (Add register pair to Hand L) (H) (L) ..- (H) (L) + (rh) (rl)
+ * The content of the register pair rp is added to the
+ * content of the register pair Hand L. The result is
+ * placed in the register pair Hand L. 
+ * @note: Only the CY flag is affected.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
 int DAD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
@@ -623,6 +638,14 @@ int DAD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief Xchanges HL <--> DE
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
 int XCHG_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t temp = cpu->HL;
     cpu->HL = cpu->DE;
@@ -631,6 +654,14 @@ int XCHG_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief Copies a byte of data from ACC to PORT
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
 int OUT_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t port = mem_read(&cpu->mem, base_PC+1);
     io_machine_OUT(port, cpu->ACC);
@@ -638,7 +669,16 @@ int OUT_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
-int IN_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+/**
+ * @brief Copies a byte of data from the PORT defined by
+ * byte(2) to ACC
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int IN_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t port = mem_read(&cpu->mem, base_PC+1);
     cpu->ACC = io_machine_IN(port);
     DECOMPILE_PRINT(op_code, "IN %x\n", port);
@@ -653,7 +693,7 @@ int IN_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int STAX_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int STAX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     if(reg_patt < 2){
         uint16_t* target_ref = ref_short_reg(cpu, reg_patt);
@@ -666,12 +706,127 @@ int STAX_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief (Subtract Register with borrow) ==> (A) = (A) - (r) - (CY). All the flags
+ * are affected.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int SBB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (0x07 & op_code);
+    uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
+    // Perform subtraction
+    uint16_t temp_acc = cpu->ACC;
+    temp_acc -= (*target_reg) - cpu->PSW.carry;
+    // Update Flags
+    set_flags(cpu, temp_acc, ALL_BUT_AUX_FLAG);
+    // TODO: Still don't get ACARRY Flag.
+    // Update Reg
+    cpu->ACC = temp_acc;
+    DECOMPILE_PRINT(base_PC, "SBB REG(%x) --> NOTE: Acarry Not updated!\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (A) = (A) /\ (r)
+ * The content of register r is logically anded with the
+ * content of the accumulator. The result is placed in
+ * the accumulator. The CY flag is cleared
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ANA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (0x07 & op_code);
+    uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
+    // Perform AND
+    cpu->ACC &= (*target_reg);
+    // Update Flags
+    set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
+    // TODO: Still don't get ACARRY Flag.
+    DECOMPILE_PRINT(base_PC, "SBB ACC(%x) --> NOTE: Acarry Not updated!\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (L) <-- ((byte 3)(byte 2))
+ * (H) <-- ((byte 3) (byte 2) + 1)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int LHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    cpu->HL = short_mem_read(&cpu->mem, base_PC+1);
+    DECOMPILE_PRINT(base_PC, "LHLD %x\n", cpu->HL);
+    return 1;
+}
+
+/**
+ * @brief (AND immediate)
+ * (A) = (A) & (byte 2)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ANI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
+    cpu->ACC &= target_data;
+    set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
+    // TODO: Still don't get ACARRY Flag.
+    DECOMPILE_PRINT(base_PC, "ANI %x\n", target_data);
+    return 1;
+}
+
+/**
+ * @brief *((byte 3)(byte 2)) = ACC
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int STA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t target_loc = short_mem_read(&cpu->mem, base_PC+1); 
+    mem_write(&cpu->mem, target_loc, cpu->ACC);
+    DECOMPILE_PRINT(base_PC, "STA %x\n", target_loc);
+    return 1;
+}
+
+/**
+ * @brief (increment Reg) (r) <- (r) + 1
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int INR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x38) >> 3;
+    uint16_t temp = cpu->ACC;
+    temp++;
+    // Update Stat Regs
+    set_flags(cpu, temp, (SIGN_FLAG | PARITY_FLAG | ZERO_FLAG));
+    // TODO: Still don't get ACARRY Flag.
+    cpu->ACC = (uint8_t)temp;
+    DECOMPILE_PRINT(base_PC, "INR Reg(%x)\n", reg_patt);
+    return 1;
+}
+
 instt_8080_op opcode_lookup[0x100] = {
     [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
     [0x01] = {LXI_WRAP, 10, 3},
     [0x02] = {STAX_WRAP, 7, 1},
     [0x03] = {INX_WRAP, 5, 1},
-    // [0x4]  = {INR_WRAP, 5, 1},
+    [0x04] = {INR_WRAP, 5, 1},
     [0x05] = {DCR_WRAP, 5, 1},
     [0x06] = {MVI_WRAP, 7, 2},
     // [0x7]  = {RLC_WRAP, 7, 1},
@@ -679,31 +834,44 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x09] = {DAD_WRAP, 10, 1},
     [0x0A] = {LDAX_WRAP, 7, 1},
     // [0xB]  = {DCX_WRAP, 5, 1},
-    // [0xC]  = {INR_WRAP, 5, 1},
+    [0x0C] = {INR_WRAP, 5, 1},
     [0x0D] = {DCR_WRAP, 5, 1},
     [0x0E] = {MVI_WRAP, 7, 2},
-    // [0x10] = {RRC_WRAP, 4, 1},
+    [0x10] = {NOP_WRAP, 4, 1},
     [0x11] = {LXI_WRAP, 10, 3},
     [0x12] = {STAX_WRAP, 7, 1},
     [0x13] = {INX_WRAP, 5, 1},
+    [0x14] = {INR_WRAP, 5, 1},
     [0x15] = {DCR_WRAP, 5, 1},
     [0x16] = {MVI_WRAP, 7, 2},
+    [0x18] = {NOP_WRAP, 4, 1},
     [0x19] = {DAD_WRAP, 10, 1},
     [0x1A] = {LDAX_WRAP, 7, 1},
+    [0x1C] = {INR_WRAP, 5, 1},
     [0x1D] = {DCR_WRAP, 5, 1},
     [0x1E] = {MVI_WRAP, 7, 2},
+    [0x20] = {NOP_WRAP, 4, 1},
     [0x21] = {LXI_WRAP, 10, 3},
     [0x23] = {INX_WRAP, 5, 1},
+    [0x24] = {INR_WRAP, 5, 1},
     [0x25] = {DCR_WRAP, 5, 1},
     [0x26] = {MVI_WRAP, 7, 2},
+    [0x28] = {NOP_WRAP, 4, 1},
     [0x29] = {DAD_WRAP, 10, 1},
+    [0x2A] = {LHLD_WRAP, 16, 3},
+    [0x2C] = {INR_WRAP, 5, 1},
     [0x2D] = {DCR_WRAP, 5, 1},
     [0x2E] = {MVI_WRAP, 7, 2},
+    [0x30] = {NOP_WRAP, 4, 1},
     [0x31] = {LXI_WRAP, 10, 3},
+    [0x32] = {STA_WRAP, 13, 3},
     [0x33] = {INX_WRAP, 5, 1},
+    [0x34] = {INR_WRAP, 5, 1},
     [0x35] = {DCR_WRAP, 5, 1},
     [0x36] = {MVI_WRAP, 10, 2},
+    [0x38] = {NOP_WRAP, 4, 1},
     [0x39] = {DAD_WRAP, 10, 1},
+    [0x3C] = {INR_WRAP, 5, 1},
     [0x3D] = {DCR_WRAP, 5, 1},
     [0x3E] = {MVI_WRAP, 7, 2},
     [0x40] = {MOV_WRAP, 5, 1},
@@ -770,6 +938,22 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x7D] = {MOV_WRAP, 5, 1},
     [0x7E] = {MOV_WRAP, 5, 1},
     [0x7F] = {MOV_WRAP, 5, 1},
+    [0x98] = {SBB_WRAP, 4, 1},
+    [0x99] = {SBB_WRAP, 4, 1},
+    [0x9A] = {SBB_WRAP, 4, 1},
+    [0x9B] = {SBB_WRAP, 4, 1},
+    [0x9C] = {SBB_WRAP, 4, 1},
+    [0x9D] = {SBB_WRAP, 4, 1},
+    [0x9E] = {SBB_WRAP, 4, 1},
+    [0x9F] = {SBB_WRAP, 4, 1},
+    [0xA0] = {ANA_WRAP, 4, 1},
+    [0xA1] = {ANA_WRAP, 4, 1},
+    [0xA2] = {ANA_WRAP, 4, 1},
+    [0xA3] = {ANA_WRAP, 4, 1},
+    [0xA4] = {ANA_WRAP, 4, 1},
+    [0xA5] = {ANA_WRAP, 4, 1},
+    [0xA6] = {ANA_WRAP, 4, 1},
+    [0xA7] = {ANA_WRAP, 4, 1},
     [0xB8] = {CMP_WRAP, 4, 1},
     [0xB9] = {CMP_WRAP, 4, 1},
     [0xBA] = {CMP_WRAP, 4, 1},
@@ -802,6 +986,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xE1] = {POP_WRAP, 10, 1},
     [0xE2] = {JCon_WRAP, 10, 3},
     [0xE5] = {PUSH_WRAP, 11, 1},
+    [0xE6] = {ANI_WRAP, 7, 2},
     [0xE8] = {RCon_WRAP, 11, 1},
     [0xEA] = {JCon_WRAP, 10, 3},
     [0xEB] = {XCHG_WRAP, 5, 1},

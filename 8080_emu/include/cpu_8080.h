@@ -39,6 +39,8 @@ typedef enum {
     PARITY_FLAG = 1 << 5,
     CARRY_FLAG  = 1 << 7,
 } flag_bits;
+/** @brief All but the aux flag options */
+# define ALL_BUT_AUX_FLAG (SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG)
 
 /**
  * @brief different condition checks for JMP, conditional OPS
