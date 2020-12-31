@@ -120,6 +120,15 @@ cpu_state* init_cpu_8080(uint16_t pc);
 int exec_inst(cpu_state* cpu);
 
 /**
+ * @brief Recompile mode.
+ * 
+ * @param cpu 
+ * @param next_inst 
+ * @return int 
+ */
+int decompile_inst(cpu_state* cpu, uint16_t* next_inst);
+
+/**
  * @brief Function to write data to the IO port
  * 
  * @param port where the data is written to

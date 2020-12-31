@@ -38,13 +38,30 @@ int exec_inst(cpu_state* cpu){
     return ret;
 }
 
+int decompile_inst(cpu_state* cpu, uint16_t* next_inst){
+    uint8_t Instt = mem_read(&cpu->mem, (*next_inst));
+    cpu->PC = (*next_inst);
+
+    (*next_inst) += opcode_lookup[Instt].size;
+
+    uint16_t inital_pc_ptr = cpu->PC;
+    
+    // TODO: Remove
+    if(opcode_lookup[Instt].target_func == 0x0){
+         opcode_lookup[Instt].target_func = UNDEFINED_OP_WRAP;
+    }
+
+    int ret = opcode_lookup[Instt].target_func(cpu, inital_pc_ptr, Instt);
+    return ret;
+}
+
 void io_machine_OUT(UNUSED uint8_t port, UNUSED uint16_t data){
-    printf("UNINPLEMENTED MACHINE_OUT\n");
+    // DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_OUT");
     return;
 }
 
 uint8_t io_machine_IN(UNUSED uint8_t port){
-    printf("UNINPLEMENTED MACHINE_IN\n");
+    // DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_IN");
     return 0x0;
 }
 

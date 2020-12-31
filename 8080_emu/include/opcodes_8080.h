@@ -249,8 +249,7 @@ program_status_word decompress_PSW(uint8_t status){
  */
 int UNDEFINED_OP_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     DECOMPILE_PRINT(base_PC, "(%x)This Opcode has not been initialized.\n", op_code);
-    exit(-2);
-    return 1;
+    return -1;
 }
 
 /**
@@ -470,7 +469,8 @@ int JCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     if(condition_check(cpu, (0x38 & op_code)>>3)){
         cpu->PC = short_mem_read(&cpu->mem, base_PC+1);
     }
-    DECOMPILE_PRINT(base_PC, "JMP Con(%x) %x\n", (0x38 & op_code)>>3, cpu->PC);
+    DECOMPILE_PRINT(base_PC, "JMP Con(%x) %x\n", (0x38 & op_code)>>3, 
+        short_mem_read(&cpu->mem, base_PC+1));
     return 1;
 }
 
@@ -555,7 +555,7 @@ int CPI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     set_flags(cpu, diff, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG);
     // TODO: Fix AUX set
     // aux_flag_set_sub(cpu, acc_reg, compare_src);
-    DECOMPILE_PRINT(base_PC, "CPI *(%x)\n", cpu->HL);
+    DECOMPILE_PRINT(base_PC, "CPI %x\n", compare_src);
     return 1;
 }
 
@@ -707,30 +707,6 @@ int STAX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
 }
 
 /**
- * @brief (Subtract Register with borrow) ==> (A) = (A) - (r) - (CY). All the flags
- * are affected.
- * 
- * @param cpu 
- * @param base_PC 
- * @param op_code 
- * @return int 
- */
-int SBB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
-    uint8_t reg_patt = (0x07 & op_code);
-    uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
-    // Perform subtraction
-    uint16_t temp_acc = cpu->ACC;
-    temp_acc -= (*target_reg) - cpu->PSW.carry;
-    // Update Flags
-    set_flags(cpu, temp_acc, ALL_BUT_AUX_FLAG);
-    // TODO: Still don't get ACARRY Flag.
-    // Update Reg
-    cpu->ACC = temp_acc;
-    DECOMPILE_PRINT(base_PC, "SBB REG(%x) --> NOTE: Acarry Not updated!\n", reg_patt);
-    return 1;
-}
-
-/**
  * @brief (A) = (A) /\ (r)
  * The content of register r is logically anded with the
  * content of the accumulator. The result is placed in
@@ -763,8 +739,9 @@ int ANA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @return int 
  */
 int LHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
-    cpu->HL = short_mem_read(&cpu->mem, base_PC+1);
-    DECOMPILE_PRINT(base_PC, "LHLD %x\n", cpu->HL);
+    uint16_t target_addr = short_mem_read(&cpu->mem, base_PC+1);
+    cpu->HL = short_mem_read(&cpu->mem, target_addr);
+    DECOMPILE_PRINT(base_PC, "LHLD %x\n", target_addr);
     return 1;
 }
 
@@ -821,6 +798,548 @@ int INR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief (Rotate Right)
+ * (An) <- (An-1); (A7) <- A0
+ * (Cy) <- (A0)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int RRC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t lsb = 0x1 & cpu->ACC;
+    cpu->ACC >>= 1;
+    if(lsb){
+        cpu->ACC |= 0x80;
+        cpu->PSW.carry = 1;
+    } else {
+        cpu->PSW.carry = 0;
+    }
+    DECOMPILE_PRINT(base_PC, "%s\n", "RRC");
+    return 1;
+}
+
+/**
+ * @brief (Load Accumulator direct)
+ * (A) = *((byte 3)(byte 2))
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int LDA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t target_addr = short_mem_read(&cpu->mem, base_PC+1);
+    cpu->ACC = short_mem_read(&cpu->mem, target_addr);
+    DECOMPILE_PRINT(base_PC, "LDA %x\n", target_addr);
+    return 1;
+}
+
+/**
+ * @brief (Exclusive OR Register)
+ * (A) = (A) ^ (r)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int XRA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x07);
+    uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
+    uint16_t temp = (*target_reg) ^ cpu->ACC;
+    cpu->ACC = temp;
+    // Setting flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    cpu->PSW.aux = 0;
+    DECOMPILE_PRINT(base_PC, "XRA Reg(%x)\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief Enable Interrupts
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int EI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    cpu->intt = 1;
+    DECOMPILE_PRINT(base_PC, "%s\n", "EI");
+    return 1;
+}
+
+/**
+ * @brief Disable Interrupts
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int DI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    cpu->intt = 0;
+    DECOMPILE_PRINT(base_PC, "%s\n", "DI");
+    return 1;
+}
+
+/**
+ * @brief (L) --> ((byte 3)(byte 2))
+ * (H) --> ((byte 3) (byte 2) + 1)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int SHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t target_addr = short_mem_read(&cpu->mem, base_PC+1);
+    short_mem_write(&cpu->mem, target_addr, cpu->HL);
+    DECOMPILE_PRINT(base_PC, "SHLD %x\n", target_addr);
+    return 1;
+}
+
+/**
+ * @brief (reg pair) = (reg pair) - 1
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int DCX_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x30) >> 4;
+    uint16_t* target_reg = ref_short_reg(cpu, reg_patt);
+    (*target_reg)--;
+    DECOMPILE_PRINT(base_PC, "DCX REGP(%x)\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (Rotate left)
+ * (An+l) <-- (An) ; (AO) <-- (A7); (CY) <-- (A7)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int RLC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t msb = (cpu->ACC & 0x80) ? 1 : 0;
+    cpu->ACC <<= 1;
+    if(msb){
+        cpu->ACC |= msb;
+        cpu->PSW.carry = 1;
+    } else {
+        cpu->PSW.carry = 0;
+    }
+    DECOMPILE_PRINT(base_PC, "%s\n", "RLC");
+    return 1;
+}
+
+/**
+ * @brief (Rotate left through carry)
+ * (An+1) <-- (An) ; (CY) <-- (A7) ; (AO) <-- (CY)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int RAL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t msb = (cpu->ACC & 0x80) ? 1 : 0;
+    cpu->ACC = (cpu->ACC << 1) | cpu->PSW.carry;
+    if(msb){
+        cpu->PSW.carry = 1;
+    } else {
+        cpu->PSW.carry = 0;
+    }
+    DECOMPILE_PRINT(base_PC, "%s\n", "RAL");
+    return 1;
+}
+
+/**
+ * @brief (Rotate right through carry)
+ * (An) <-- (An+l) ; (CY) <-- (AO) ; (A7) <-- (CY)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int RAR_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t lsb = cpu->ACC & 0x01;
+    cpu->ACC = (cpu->ACC >> 1) | (cpu->PSW.carry ? 0x80 : 0x0);
+    if(lsb){
+        cpu->PSW.carry = 1;
+    } else {
+        cpu->PSW.carry = 0;
+    }
+    DECOMPILE_PRINT(base_PC, "%s\n", "RAR");
+    return 1;
+}
+
+/**
+ * @brief Ccondition addr (Condition call)
+ * If (CCC),
+ * ((SP) -1) (PCH)
+ * ((SP) - 2) (PCl)
+ * (SP) (SP) - 2
+ * (PC) (byte 3) (byte 2)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int CCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    if(condition_check(cpu, (0x38 & op_code)>>3)){
+        cpu->SP -= 2;
+        short_mem_write(&cpu->mem, cpu->SP, cpu->PC);       // Saving Return Addr
+        cpu->PC = short_mem_read(&cpu->mem, base_PC+1);     // Reading the new PC
+    }
+    DECOMPILE_PRINT(base_PC, "CALL Con(%x) %x\n", (0x38 & op_code)>>3, 
+        short_mem_read(&cpu->mem, base_PC+1));
+    return 1;
+}
+
+/**
+ * @brief (Subtract immediate with borrow)
+ * (A) <-- (A) - (byte 2) - (CY)
+ * The contents of the second byte of the instruction
+ * and the contents of the CY flag are both subtracted
+ * from the accumulator. The result is placed in the
+ * accumulator
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int SBI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
+    uint16_t temp =  cpu->ACC;
+    temp = temp - target_data - cpu->PSW.carry;
+    // Set flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX flags
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "SBI %x\n", target_data);
+    return 1;
+}
+
+/**
+ * @brief (Add Register)
+ * (A) <-- (A) + (r)
+ * The content of register r is added to the content of the
+ * accumulator. The result is placed in the accumulator.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ADD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x07);
+    uint16_t temp = *(ref_byte_reg(cpu, reg_patt));
+    temp += cpu->ACC;
+    // Set Flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX FLAG setup
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "ADD REG(%x)\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (Add Immediate)
+ * (A) <-- (A) + (byte 2)
+ * The content of the second byte of the instruction is
+ * added to the content of the accumulator. The result
+ * is placed in the accumulator
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ADI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t temp = mem_read(&cpu->mem, base_PC+1);
+    temp += cpu->ACC;
+    // Set Flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX FLAG setup
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "ADI %x\n", mem_read(&cpu->mem, base_PC+1));
+    return 1;
+}
+
+/**
+ * @brief (Add Register with carry)
+ * (A) <-- (A) + (r) + (CY)
+ * The content of register r and the content of the carry
+ * bit are added to the content of the accumulator. The
+ * result is placed in the accumulator
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ADC_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x07);
+    uint16_t temp = *(ref_byte_reg(cpu, reg_patt));
+    temp += cpu->ACC + cpu->PSW.carry;
+    // Set Flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX FLAG setup
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "ADC REG(%x)\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (Add immediate with carry)
+ * (A) <-- (A) + (byte 2) + (CY)
+ * The content of the second byte of the instruction and
+ * the content of the CY flag are added to the contents
+ * of the accumulator. The result is placed in the accumulator
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ACI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t temp = mem_read(&cpu->mem, base_PC+1);
+    temp += cpu->ACC + cpu->PSW.carry;
+    // Set Flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX FLAG setup
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "ACI %x\n", mem_read(&cpu->mem, base_PC+1));
+    return 1;
+}
+
+/**
+ * @brief (Subtract Register)
+ * (A) <-- (A) - (r)
+ * The content of register r is subtracted from the content 
+ * of the accumulator. The result is placed in the accumulator.
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int SUB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x07);
+    uint16_t temp = cpu->ACC;
+    temp -= *(ref_byte_reg(cpu, reg_patt));
+    // Set Flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX FLAG setup
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "SUB REG(%x)\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (Subtract immediate)
+ * (A) <-- (A) - (byte 2)
+ * The content of the second byte of the instruction is
+ * subtracted from the content of the accumulator. The
+ * result is placed in the accumulator
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int SUI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t temp = cpu->ACC;
+    temp -= mem_read(&cpu->mem, base_PC+1);
+    // Set Flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX FLAG setup
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "SUI %x\n", mem_read(&cpu->mem, base_PC+1));
+    return 1;
+}
+
+/**
+ * @brief (Subtract Register with borrow)
+ * (A) <-- (A) - (r) - (CY)
+ * The content of register r and the content of the CY
+ * flag are both subtracted from the accumulator. The
+ * result is placed in the accumulator.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int SBB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x07);
+    uint16_t temp = cpu->ACC;
+    temp -= (*(ref_byte_reg(cpu, reg_patt)) + cpu->PSW.carry);
+    // Set Flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    // TODO AUX FLAG setup
+    cpu->ACC = temp;
+    DECOMPILE_PRINT(base_PC, "SBB REG(%x)\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (OR Register)
+ * (A) <-- (A) | (r)
+ * The content of register r is inclusive-OR'd with the
+ * content of the accumulator. The result is placed in
+ * the accumulator. The CY and AC flags are cleared.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ORA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    uint8_t reg_patt = (op_code & 0x07);
+    uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
+    uint16_t temp = (*target_reg) | cpu->ACC;
+    cpu->ACC = temp;
+    // Setting flags
+    set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
+    cpu->PSW.aux = 0;
+    DECOMPILE_PRINT(base_PC, "ORA Reg(%x)\n", reg_patt);
+    return 1;
+}
+
+/**
+ * @brief (Exchange stack top with Hand L)
+ * (L) <--> ((SP)) ;
+ * (H) <--> ((SP) + 1) ;
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int XTHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t temp = short_mem_read(&cpu->mem, cpu->SP);
+    short_mem_write(&cpu->mem,cpu->SP,cpu->HL);
+    cpu->HL = temp;
+    DECOMPILE_PRINT(base_PC, "%s\n", "XTHL");
+    return 1;
+}
+
+/**
+ * @brief (Jump Hand l indirect - move Hand L to PC)
+ * (PCH) <-- (H)
+ * (PCl) <-- (l)
+ * The content of register H is moved to the high-order
+ * eight bits of register PC. The content of register l is
+ * moved to the low-order eight bits of register PC.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int PCHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    cpu->PC = cpu->HL;
+    DECOMPILE_PRINT(base_PC, "%s\n", "PCHL");
+    return 1;
+}
+
+/**
+ * @brief (OR Immediate)
+ * (A) <-- (A) V (byte 2)
+ * The content of the second byte of the instruction is
+ * inclusive-OR'd with the content of the accumulator.
+ * The result is placed in the accumulator. The CY and
+ * AC flags are cleared.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int ORI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+     uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
+    cpu->ACC |= target_data;
+    set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
+    // TODO: Still don't get ACARRY Flag.
+    DECOMPILE_PRINT(base_PC, "ORI %x\n", target_data);
+    return 1;
+}
+
+/**
+ * @brief (Exclusive OR Immediate)
+ * (A) <-- (A) ^ (byte 2)
+ * The content of the second byte of the instruction is
+ * exclusive-O R'd with the content of the accumu lator.
+ * The result is placed in the accumulator. The CY and
+ * AC flags are cleared.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int XRI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
+    cpu->ACC ^= target_data;
+    set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
+    // TODO: Still don't get ACARRY Flag.
+    DECOMPILE_PRINT(base_PC, "XRI %x\n", target_data);
+    return 1;
+}
+
+/**
+ * @brief Complement accumulator (A) <- (~A)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int CMA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    cpu->ACC = ~(cpu->ACC);
+    DECOMPILE_PRINT(base_PC, "%s\n", "CMA");
+    return 1;
+}
+
+/**
+ * @brief Complement carry (CY) <- (!CY)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int CMC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    cpu->PSW.carry = !(cpu->PSW.carry);
+    DECOMPILE_PRINT(base_PC, "%s\n", "CMC");
+    return 1;
+}
+
+/**
+ * @brief Set Carry (CY) <- (1)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int STC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    cpu->PSW.carry = 1;
+    DECOMPILE_PRINT(base_PC, "%s\n", "STC");
+    return 1;
+}
+
 instt_8080_op opcode_lookup[0x100] = {
     [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
     [0x01] = {LXI_WRAP, 10, 3},
@@ -829,14 +1348,15 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x04] = {INR_WRAP, 5, 1},
     [0x05] = {DCR_WRAP, 5, 1},
     [0x06] = {MVI_WRAP, 7, 2},
-    // [0x7]  = {RLC_WRAP, 7, 1},
+    [0x07] = {RLC_WRAP, 7, 1},
     [0x08] = {NOP_WRAP, 4, 1},
     [0x09] = {DAD_WRAP, 10, 1},
     [0x0A] = {LDAX_WRAP, 7, 1},
-    // [0xB]  = {DCX_WRAP, 5, 1},
+    [0x0B] = {DCX_WRAP, 5, 1},
     [0x0C] = {INR_WRAP, 5, 1},
     [0x0D] = {DCR_WRAP, 5, 1},
     [0x0E] = {MVI_WRAP, 7, 2},
+    [0x0F] = {RRC_WRAP, 4, 1},
     [0x10] = {NOP_WRAP, 4, 1},
     [0x11] = {LXI_WRAP, 10, 3},
     [0x12] = {STAX_WRAP, 7, 1},
@@ -844,24 +1364,31 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x14] = {INR_WRAP, 5, 1},
     [0x15] = {DCR_WRAP, 5, 1},
     [0x16] = {MVI_WRAP, 7, 2},
+    [0x17] = {RAL_WRAP, 4, 1},
     [0x18] = {NOP_WRAP, 4, 1},
     [0x19] = {DAD_WRAP, 10, 1},
     [0x1A] = {LDAX_WRAP, 7, 1},
+    [0x1B] = {DCX_WRAP, 5, 1},
     [0x1C] = {INR_WRAP, 5, 1},
     [0x1D] = {DCR_WRAP, 5, 1},
     [0x1E] = {MVI_WRAP, 7, 2},
+    [0x1F] = {RAR_WRAP, 4, 1},
     [0x20] = {NOP_WRAP, 4, 1},
     [0x21] = {LXI_WRAP, 10, 3},
+    [0x22] = {SHLD_WRAP, 16, 3},
     [0x23] = {INX_WRAP, 5, 1},
     [0x24] = {INR_WRAP, 5, 1},
     [0x25] = {DCR_WRAP, 5, 1},
     [0x26] = {MVI_WRAP, 7, 2},
+    [0x27] = {UNDEFINED_OP_WRAP, 4, 1},
     [0x28] = {NOP_WRAP, 4, 1},
     [0x29] = {DAD_WRAP, 10, 1},
     [0x2A] = {LHLD_WRAP, 16, 3},
+    [0x2B] = {DCX_WRAP, 5, 1},
     [0x2C] = {INR_WRAP, 5, 1},
     [0x2D] = {DCR_WRAP, 5, 1},
     [0x2E] = {MVI_WRAP, 7, 2},
+    [0x2F] = {CMA_WRAP, 4, 1},
     [0x30] = {NOP_WRAP, 4, 1},
     [0x31] = {LXI_WRAP, 10, 3},
     [0x32] = {STA_WRAP, 13, 3},
@@ -869,11 +1396,15 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x34] = {INR_WRAP, 5, 1},
     [0x35] = {DCR_WRAP, 5, 1},
     [0x36] = {MVI_WRAP, 10, 2},
+    [0x37] = {STC_WRAP, 4, 1},
     [0x38] = {NOP_WRAP, 4, 1},
     [0x39] = {DAD_WRAP, 10, 1},
+    [0x3A] = {LDA_WRAP, 13, 3},
+    [0x3B] = {DCX_WRAP, 5, 1},
     [0x3C] = {INR_WRAP, 5, 1},
     [0x3D] = {DCR_WRAP, 5, 1},
     [0x3E] = {MVI_WRAP, 7, 2},
+    [0x3F] = {CMC_WRAP, 4, 1},
     [0x40] = {MOV_WRAP, 5, 1},
     [0x41] = {MOV_WRAP, 5, 1},
     [0x42] = {MOV_WRAP, 5, 1},
@@ -938,6 +1469,30 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x7D] = {MOV_WRAP, 5, 1},
     [0x7E] = {MOV_WRAP, 5, 1},
     [0x7F] = {MOV_WRAP, 5, 1},
+    [0x80] = {ADD_WRAP, 4, 1},
+    [0x81] = {ADD_WRAP, 4, 1},
+    [0x82] = {ADD_WRAP, 4, 1},
+    [0x83] = {ADD_WRAP, 4, 1},
+    [0x84] = {ADD_WRAP, 4, 1},
+    [0x85] = {ADD_WRAP, 4, 1},
+    [0x86] = {ADD_WRAP, 4, 1},
+    [0x87] = {ADD_WRAP, 4, 1},
+    [0x88] = {ADC_WRAP, 4, 1},
+    [0x89] = {ADC_WRAP, 4, 1},
+    [0x8A] = {ADC_WRAP, 4, 1},
+    [0x8B] = {ADC_WRAP, 4, 1},
+    [0x8C] = {ADC_WRAP, 4, 1},
+    [0x8D] = {ADC_WRAP, 4, 1},
+    [0x8E] = {ADC_WRAP, 4, 1},
+    [0x8F] = {ADC_WRAP, 4, 1},
+    [0x90] = {SUB_WRAP, 4, 1},
+    [0x91] = {SUB_WRAP, 4, 1},
+    [0x92] = {SUB_WRAP, 4, 1},
+    [0x93] = {SUB_WRAP, 4, 1},
+    [0x94] = {SUB_WRAP, 4, 1},
+    [0x95] = {SUB_WRAP, 4, 1},
+    [0x96] = {SUB_WRAP, 4, 1},
+    [0x97] = {SUB_WRAP, 4, 1},
     [0x98] = {SBB_WRAP, 4, 1},
     [0x99] = {SBB_WRAP, 4, 1},
     [0x9A] = {SBB_WRAP, 4, 1},
@@ -954,6 +1509,22 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xA5] = {ANA_WRAP, 4, 1},
     [0xA6] = {ANA_WRAP, 4, 1},
     [0xA7] = {ANA_WRAP, 4, 1},
+    [0xA8] = {XRA_WRAP, 4, 1},
+    [0xA9] = {XRA_WRAP, 4, 1},
+    [0xAA] = {XRA_WRAP, 4, 1},
+    [0xAB] = {XRA_WRAP, 4, 1},
+    [0xAC] = {XRA_WRAP, 4, 1},
+    [0xAD] = {XRA_WRAP, 4, 1},
+    [0xAE] = {XRA_WRAP, 4, 1},
+    [0xAF] = {XRA_WRAP, 4, 1},
+    [0xB0] = {ORA_WRAP, 4, 1},
+    [0xB1] = {ORA_WRAP, 4, 1},
+    [0xB2] = {ORA_WRAP, 4, 1},
+    [0xB3] = {ORA_WRAP, 4, 1},
+    [0xB4] = {ORA_WRAP, 4, 1},
+    [0xB5] = {ORA_WRAP, 4, 1},
+    [0xB6] = {ORA_WRAP, 4, 1},
+    [0xB7] = {ORA_WRAP, 4, 1},
     [0xB8] = {CMP_WRAP, 4, 1},
     [0xB9] = {CMP_WRAP, 4, 1},
     [0xBA] = {CMP_WRAP, 4, 1},
@@ -966,37 +1537,55 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xC1] = {POP_WRAP, 10, 1},
     [0xC2] = {JCon_WRAP, 10, 3},
     [0xC3] = {JMP_WRAP, 10, 3},
+    [0xC4] = {CCon_WRAP, 17, 3},
     [0xC5] = {PUSH_WRAP, 11, 1},
+    [0xC6] = {ADI_WRAP, 7, 2},
     [0xC8] = {RCon_WRAP, 11, 1},
     [0xC9] = {RET_WRAP, 10, 1},
     [0xCA] = {JCon_WRAP, 10, 3},
     [0xCB] = {JMP_WRAP, 10, 3},
+    [0xCC] = {CCon_WRAP, 17, 3},
     [0xCD] = {CALL_WRAP, 17, 3},
+    [0xCE] = {ACI_WRAP, 7, 2},
     [0xD0] = {RCon_WRAP, 11, 1},
     [0xD1] = {POP_WRAP, 10, 1},
     [0xD2] = {JCon_WRAP, 10, 3},
     [0xD3] = {OUT_WRAP, 10, 2},
+    [0xD4] = {CCon_WRAP, 17, 3},
     [0xD5] = {PUSH_WRAP, 11, 1},
+    [0xD6] = {SUI_WRAP, 7, 2},
     [0xD8] = {RCon_WRAP, 11, 1},
     [0xD9] = {RET_WRAP, 10, 1},
     [0xDA] = {JCon_WRAP, 10, 3},
     [0xDB] = {IN_WRAP, 10, 2},
+    [0xDC] = {CCon_WRAP, 17, 3},
     [0xDD] = {CALL_WRAP, 17, 3},
+    [0xDE] = {SBI_WRAP, 7, 2},
     [0xE0] = {RCon_WRAP, 11, 1},
     [0xE1] = {POP_WRAP, 10, 1},
     [0xE2] = {JCon_WRAP, 10, 3},
+    [0xE3] = {XTHL_WRAP, 18, 1},
+    [0xE4] = {CCon_WRAP, 17, 3},
     [0xE5] = {PUSH_WRAP, 11, 1},
     [0xE6] = {ANI_WRAP, 7, 2},
     [0xE8] = {RCon_WRAP, 11, 1},
+    [0xE9] = {PCHL_WRAP, 5, 1},
     [0xEA] = {JCon_WRAP, 10, 3},
     [0xEB] = {XCHG_WRAP, 5, 1},
+    [0xEC] = {CCon_WRAP, 17, 3},
     [0xED] = {CALL_WRAP, 17, 3},
+    [0xEE] = {XRI_WRAP, 7, 2},
     [0xF0] = {RCon_WRAP, 11, 1},
     [0xF1] = {POP_WRAP, 10, 1},
     [0xF2] = {JCon_WRAP, 10, 3},
+    [0xF3] = {DI_WRAP, 4, 1},
+    [0xF4] = {CCon_WRAP, 17, 3},
     [0xF5] = {PUSH_WRAP, 11, 1},
+    [0xF6] = {ORI_WRAP, 7, 2},
     [0xF8] = {RCon_WRAP, 11, 1},
     [0xFA] = {JCon_WRAP, 10, 3},
+    [0xFB] = {EI_WRAP, 4, 1},
+    [0xFC] = {CCon_WRAP, 17, 3},
     [0xFD] = {CALL_WRAP, 17, 3},
     [0xFE] = {CPI_WRAP, 7, 2},
 };

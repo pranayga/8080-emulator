@@ -43,8 +43,14 @@ int main(){
     // Set PC to start of the ROM text Offset
     cpu->PC = 0;
     // Exec ROM FILE
-    printf("Starting Exec......\n");
-    while(exec_inst(cpu)==1){}
+    printf("Starting Decompiling......\n");
+    uint16_t next_PC = 0;
+    while(1){
+        if (decompile_inst(cpu, &next_PC) != 1){
+            char s[10];
+            scanf("%s", s);
+        }
+    }
 
     // free the buffers.
     close(rom_FD);
