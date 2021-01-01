@@ -191,14 +191,20 @@ void set_flags(cpu_state* cpu ,uint32_t final_state, uint8_t flags){
 }
 
 /**
- * @brief sets the aux flag for subtraction based operations.
+ * @brief sets the aux flag for all operations. Must convert all ops to a 
+ * addition operation (compressed).
+ * Does base_val + diff to recalc the result.
+ * So for -ve bass -ve num's 2 complement. 
+ * 
  * @todo not sure if this is correct.
  * @param cpu 
- * @param base_val 
- * @param diff 
+ * @param base_val the initial value
+ * @param diff the value to be added to the base
  */
-void aux_flag_set_sub(cpu_state* cpu, uint32_t base_val, uint32_t diff){
-    if((0xF & base_val) < (0xF & diff)){
+void aux_flag_set_add(cpu_state* cpu, uint32_t base_val, uint32_t diff){
+    uint8_t xor = (base_val ^ diff) & 0x10; // basically if 0|1 -> 1 else 0
+    uint8_t summ = (base_val + diff) & 0x10; // xor + propagate
+    if( xor != summ ){
         cpu->PSW.aux = 1;
     } else {
         cpu->PSW.aux = 0;
@@ -347,8 +353,8 @@ int CALL_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
         DECOMPILE_PRINT(base_PC, "CALL %x\n", cpu->PC );    // Logging
         break;
     default:
-        // TODO: Few missing instruction not defined in the
-        // system manual.
+        // There was CALL at 0x[D-F]D which didn't have stuff
+        // in the manual
         ILLEGAL_OP;
         break;
     }
@@ -445,14 +451,13 @@ int INX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
 int DCR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t target_reg = (op_code & 0x38) >> 3;
     uint16_t target_data = *(ref_byte_reg(cpu, target_reg));
-    // uint16_t base_data = target_data;
+    uint16_t base_data = target_data;
     // Update The data
     target_data -= 1;
     *(ref_byte_reg(cpu, target_reg)) = (uint8_t)target_data;
     // Update Flags
     set_flags(cpu, target_data, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG );
-    // TODO: Fix AUX set
-    // aux_flag_set_sub(cpu, base_data, 1);
+    aux_flag_set_add(cpu, base_data, -1);
     DECOMPILE_PRINT(base_PC, "DCR REG(%x)\n", target_reg);
     return 1;
 }
@@ -532,8 +537,7 @@ int CMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint16_t diff = acc_reg - compare_src;
     // Update Flags
     set_flags(cpu, diff, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG);
-    // TODO: Fix AUX set
-    // aux_flag_set_sub(cpu, acc_reg, compare_src);
+    aux_flag_set_add(cpu, acc_reg, -compare_src);
     DECOMPILE_PRINT(base_PC, "CMP REG(%x)\n", (op_code & 0x07));
     return 1;
 }
@@ -553,8 +557,7 @@ int CPI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t diff = acc_reg - compare_src;
     // Update Flags
     set_flags(cpu, diff, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG);
-    // TODO: Fix AUX set
-    // aux_flag_set_sub(cpu, acc_reg, compare_src);
+    aux_flag_set_add(cpu, acc_reg, -compare_src);
     DECOMPILE_PRINT(base_PC, "CPI %x\n", compare_src);
     return 1;
 }
@@ -721,11 +724,14 @@ int ANA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x07 & op_code);
     uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
     // Perform AND
+    uint8_t base_val = cpu->ACC;
+    uint8_t base_target = *target_reg;
     cpu->ACC &= (*target_reg);
     // Update Flags
     set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
-    // TODO: Still don't get ACARRY Flag.
-    DECOMPILE_PRINT(base_PC, "SBB ACC(%x) --> NOTE: Acarry Not updated!\n", reg_patt);
+    // https://www.quora.com/What-is-the-auxiliary-carry-set-when-ANA-R-instruction-is-executed-in-an-8085-CPU
+    cpu->PSW.aux = ((base_val | base_target) & 0x08) ? 1 : 0;
+    DECOMPILE_PRINT(base_PC, "ANA REG(%x)\n", reg_patt);
     return 1;
 }
 
@@ -756,9 +762,11 @@ int LHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  */
 int ANI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
+    uint8_t base_val = cpu->ACC;
     cpu->ACC &= target_data;
     set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
-    // TODO: Still don't get ACARRY Flag.
+    // https://www.quora.com/What-is-the-auxiliary-carry-set-when-ANA-R-instruction-is-executed-in-an-8085-CPU
+    cpu->PSW.aux = ((base_val | target_data) & 0x08) ? 1 : 0;
     DECOMPILE_PRINT(base_PC, "ANI %x\n", target_data);
     return 1;
 }
@@ -792,7 +800,7 @@ int INR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     temp++;
     // Update Stat Regs
     set_flags(cpu, temp, (SIGN_FLAG | PARITY_FLAG | ZERO_FLAG));
-    // TODO: Still don't get ACARRY Flag.
+    aux_flag_set_add(cpu, cpu->ACC, 1);
     cpu->ACC = (uint8_t)temp;
     DECOMPILE_PRINT(base_PC, "INR Reg(%x)\n", reg_patt);
     return 1;
@@ -1025,7 +1033,7 @@ int SBI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     temp = temp - target_data - cpu->PSW.carry;
     // Set flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX flags
+    aux_flag_set_add(cpu, cpu->ACC, -target_data - cpu->PSW.carry);
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "SBI %x\n", target_data);
     return 1;
@@ -1048,7 +1056,7 @@ int ADD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     temp += cpu->ACC;
     // Set Flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX FLAG setup
+    aux_flag_set_add(cpu, cpu->ACC, *(ref_byte_reg(cpu, reg_patt)));
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "ADD REG(%x)\n", reg_patt);
     return 1;
@@ -1071,7 +1079,7 @@ int ADI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     temp += cpu->ACC;
     // Set Flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX FLAG setup
+    aux_flag_set_add(cpu, cpu->ACC, mem_read(&cpu->mem, base_PC+1));
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "ADI %x\n", mem_read(&cpu->mem, base_PC+1));
     return 1;
@@ -1095,7 +1103,7 @@ int ADC_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     temp += cpu->ACC + cpu->PSW.carry;
     // Set Flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX FLAG setup
+    aux_flag_set_add(cpu, cpu->ACC, *(ref_byte_reg(cpu, reg_patt)) + cpu->PSW.carry);
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "ADC REG(%x)\n", reg_patt);
     return 1;
@@ -1118,7 +1126,7 @@ int ACI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     temp += cpu->ACC + cpu->PSW.carry;
     // Set Flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX FLAG setup
+    aux_flag_set_add(cpu, cpu->ACC, mem_read(&cpu->mem, base_PC+1) + cpu->PSW.carry);
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "ACI %x\n", mem_read(&cpu->mem, base_PC+1));
     return 1;
@@ -1140,7 +1148,7 @@ int SUB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     temp -= *(ref_byte_reg(cpu, reg_patt));
     // Set Flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX FLAG setup
+    aux_flag_set_add(cpu, cpu->ACC, - (*(ref_byte_reg(cpu, reg_patt))));
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "SUB REG(%x)\n", reg_patt);
     return 1;
@@ -1163,7 +1171,7 @@ int SUI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     temp -= mem_read(&cpu->mem, base_PC+1);
     // Set Flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX FLAG setup
+    aux_flag_set_add(cpu, cpu->ACC, - (mem_read(&cpu->mem, base_PC+1)));
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "SUI %x\n", mem_read(&cpu->mem, base_PC+1));
     return 1;
@@ -1187,7 +1195,7 @@ int SBB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     temp -= (*(ref_byte_reg(cpu, reg_patt)) + cpu->PSW.carry);
     // Set Flags
     set_flags(cpu, temp, ALL_BUT_AUX_FLAG);
-    // TODO AUX FLAG setup
+    aux_flag_set_add(cpu, cpu->ACC, - (*(ref_byte_reg(cpu, reg_patt))) - 1);
     cpu->ACC = temp;
     DECOMPILE_PRINT(base_PC, "SBB REG(%x)\n", reg_patt);
     return 1;
@@ -1271,7 +1279,7 @@ int ORI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
      uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
     cpu->ACC |= target_data;
     set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
-    // TODO: Still don't get ACARRY Flag.
+    cpu->PSW.aux = 0;
     DECOMPILE_PRINT(base_PC, "ORI %x\n", target_data);
     return 1;
 }
@@ -1293,7 +1301,7 @@ int XRI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
     cpu->ACC ^= target_data;
     set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
-    // TODO: Still don't get ACARRY Flag.
+    cpu->PSW.aux = 0;
     DECOMPILE_PRINT(base_PC, "XRI %x\n", target_data);
     return 1;
 }
@@ -1340,6 +1348,58 @@ int STC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief (Decimal Adjust Accumulator)
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int DAA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    if((cpu->ACC & 0xF) > 0x9 || cpu->PSW.aux){
+        cpu->PSW.aux = 0;
+        if(((cpu->ACC & 0xF) + 0x06) > 0xF){
+            cpu->PSW.aux = 1;
+        }
+        if((cpu->ACC + 6) & 0x100){
+            cpu->PSW.carry = 1;
+        }
+        cpu->ACC += 0x6;
+    }
+    if((cpu->ACC & 0xF0) >> 4 > 0x9 || cpu->PSW.carry == 1){
+        if(((cpu->ACC >> 4) + 0x06) > 0xF){
+            cpu->PSW.carry = 1;
+        }
+        cpu->ACC += 0x60;
+    }
+    DECOMPILE_PRINT(base_PC, "%s\n", "DAA");
+    return 1;
+}
+
+/**
+ * @brief (Restart)
+ * ((SP) - 1) <-- (PCH);
+ * ((SP) - 2) <-- (PCl);
+ * (SP) <-- (SP) - 2;
+ * (PC) <-- 8* (NNN);
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int RST_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+    cpu->SP -= 2;
+    short_mem_write(&cpu->mem, cpu->SP, cpu->PC);       // Saving Return Addr
+    // Generating new position
+    uint16_t target_addr = ((op_code & 0x38) >> 3);     // Generate new target Addr
+    cpu->PC = target_addr * 8;                          // Writing New PC
+    DECOMPILE_PRINT(base_PC, "RST %x\n", target_addr);  // Logging
+    return 1;
+}
+
+
 instt_8080_op opcode_lookup[0x100] = {
     [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
     [0x01] = {LXI_WRAP, 10, 3},
@@ -1380,7 +1440,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0x24] = {INR_WRAP, 5, 1},
     [0x25] = {DCR_WRAP, 5, 1},
     [0x26] = {MVI_WRAP, 7, 2},
-    [0x27] = {UNDEFINED_OP_WRAP, 4, 1},
+    [0x27] = {DAA_WRAP, 4, 1},
     [0x28] = {NOP_WRAP, 4, 1},
     [0x29] = {DAD_WRAP, 10, 1},
     [0x2A] = {LHLD_WRAP, 16, 3},
@@ -1540,6 +1600,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xC4] = {CCon_WRAP, 17, 3},
     [0xC5] = {PUSH_WRAP, 11, 1},
     [0xC6] = {ADI_WRAP, 7, 2},
+    [0xC7] = {RST_WRAP, 11, 1},
     [0xC8] = {RCon_WRAP, 11, 1},
     [0xC9] = {RET_WRAP, 10, 1},
     [0xCA] = {JCon_WRAP, 10, 3},
@@ -1547,6 +1608,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xCC] = {CCon_WRAP, 17, 3},
     [0xCD] = {CALL_WRAP, 17, 3},
     [0xCE] = {ACI_WRAP, 7, 2},
+    [0xCF] = {RST_WRAP, 11, 1},
     [0xD0] = {RCon_WRAP, 11, 1},
     [0xD1] = {POP_WRAP, 10, 1},
     [0xD2] = {JCon_WRAP, 10, 3},
@@ -1554,6 +1616,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xD4] = {CCon_WRAP, 17, 3},
     [0xD5] = {PUSH_WRAP, 11, 1},
     [0xD6] = {SUI_WRAP, 7, 2},
+    [0xD7] = {RST_WRAP, 11, 1},
     [0xD8] = {RCon_WRAP, 11, 1},
     [0xD9] = {RET_WRAP, 10, 1},
     [0xDA] = {JCon_WRAP, 10, 3},
@@ -1561,6 +1624,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xDC] = {CCon_WRAP, 17, 3},
     [0xDD] = {CALL_WRAP, 17, 3},
     [0xDE] = {SBI_WRAP, 7, 2},
+    [0xDF] = {RST_WRAP, 11, 1},
     [0xE0] = {RCon_WRAP, 11, 1},
     [0xE1] = {POP_WRAP, 10, 1},
     [0xE2] = {JCon_WRAP, 10, 3},
@@ -1568,6 +1632,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xE4] = {CCon_WRAP, 17, 3},
     [0xE5] = {PUSH_WRAP, 11, 1},
     [0xE6] = {ANI_WRAP, 7, 2},
+    [0xE7] = {RST_WRAP, 11, 1},
     [0xE8] = {RCon_WRAP, 11, 1},
     [0xE9] = {PCHL_WRAP, 5, 1},
     [0xEA] = {JCon_WRAP, 10, 3},
@@ -1575,6 +1640,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xEC] = {CCon_WRAP, 17, 3},
     [0xED] = {CALL_WRAP, 17, 3},
     [0xEE] = {XRI_WRAP, 7, 2},
+    [0xEF] = {RST_WRAP, 11, 1},
     [0xF0] = {RCon_WRAP, 11, 1},
     [0xF1] = {POP_WRAP, 10, 1},
     [0xF2] = {JCon_WRAP, 10, 3},
@@ -1582,12 +1648,14 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xF4] = {CCon_WRAP, 17, 3},
     [0xF5] = {PUSH_WRAP, 11, 1},
     [0xF6] = {ORI_WRAP, 7, 2},
+    [0xF7] = {RST_WRAP, 11, 1},
     [0xF8] = {RCon_WRAP, 11, 1},
     [0xFA] = {JCon_WRAP, 10, 3},
     [0xFB] = {EI_WRAP, 4, 1},
     [0xFC] = {CCon_WRAP, 17, 3},
     [0xFD] = {CALL_WRAP, 17, 3},
     [0xFE] = {CPI_WRAP, 7, 2},
+    [0xFF] = {RST_WRAP, 11, 1},
 };
 
 #endif
