@@ -43,11 +43,22 @@ int main(){
     // Set PC to start of the ROM text Offset
     cpu->PC = 0;
     // Exec ROM FILE
-    printf("Starting Decompiling......\n");
-    uint16_t next_PC = 0;
-    while(decompile_inst(cpu, &next_PC) == 1){}
-    // printf("Starting Exec......\n");
-    // while(exec_inst(cpu) == 1){}
+    // printf("Starting Decompiling......\n");
+    // uint16_t next_PC = 0;
+    // while(decompile_inst(cpu, &next_PC) == 1){}
+    printf("Starting Exec......\n");
+    UNUSED char temp;
+    int num_to_exec;
+    printf("Enter Num of Inst to skip: ");
+    scanf("%d", &num_to_exec);
+    num_to_exec--;
+    while(exec_inst(cpu) == 1){
+        if((--num_to_exec)>0){
+            continue;
+        }
+        print_state(*cpu);
+        temp = getc(stdin);
+    }
 
     // free the buffers.
     close(rom_FD);

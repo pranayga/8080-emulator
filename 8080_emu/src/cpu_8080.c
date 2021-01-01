@@ -21,6 +21,7 @@ cpu_state* init_cpu_8080(uint16_t pc){
     // Malloc a new struct
     cpu_state* cpu = (cpu_state*)calloc(1, sizeof(cpu_state));
     cpu->PC = pc;
+    cpu->SP = 0xF000;
     return cpu;
 }
 
@@ -66,6 +67,7 @@ uint8_t io_machine_IN(UNUSED uint8_t port){
 }
 
 void print_state(const cpu_state cpu){
+    printf("+++++++++++++++++++++++++++++++++++++++++++++++++\n");
     printf("CPU State Dump:\n");
     printf("======GP======\n");
     printf("B:%x\n", cpu.B);
@@ -78,9 +80,9 @@ void print_state(const cpu_state cpu){
     printf("ACC:%x\n", cpu.ACC);
     printf("PSW: C:%x A:%x S:%x Z:%x P:%x\n",   cpu.PSW.carry, cpu.PSW.aux, cpu.PSW.sign,
                                                 cpu.PSW.zero, cpu.PSW.parity);
-    printf("SP:%d\n", cpu.SP);
-    printf("PC:%d\n", cpu.PC);
-    printf("Intt:%d\n", cpu.intt);
+    printf("SP:%x\n", cpu.SP);
+    printf("PC:%x\n", cpu.PC);
+    printf("Intt:%x\n", cpu.intt);
     printf("======IMG=====\n");
     printf("Base:%p\n", cpu.mem.base);
     printf("==============\n");

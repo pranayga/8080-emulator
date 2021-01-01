@@ -66,12 +66,12 @@ typedef struct {
     /** General Purpose Registers in CPU */
     union{
         struct {
-            uint8_t B;      /**< Register 0, Pair B */
             uint8_t C;      /**< Register 1, Pair B */
-            uint8_t D;      /**< Register 2, Pair D */
+            uint8_t B;      /**< Register 0, Pair B */
             uint8_t E;      /**< Register 3, Pair D */
-            uint8_t H;      /**< Register 4, Pair H */
+            uint8_t D;      /**< Register 2, Pair D */
             uint8_t L;      /**< Register 5, Pair H */
+            uint8_t H;      /**< Register 4, Pair H */
         };
         struct {
             uint16_t BC;    /**< Extended Reg Pair BC */
