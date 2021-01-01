@@ -45,12 +45,9 @@ int main(){
     // Exec ROM FILE
     printf("Starting Decompiling......\n");
     uint16_t next_PC = 0;
-    while(1){
-        if (decompile_inst(cpu, &next_PC) != 1){
-            char s[10];
-            scanf("%s", s);
-        }
-    }
+    while(decompile_inst(cpu, &next_PC) == 1){}
+    // printf("Starting Exec......\n");
+    // while(exec_inst(cpu) == 1){}
 
     // free the buffers.
     close(rom_FD);
