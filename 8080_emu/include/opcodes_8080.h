@@ -170,7 +170,7 @@ void set_flags(cpu_state* cpu ,uint32_t final_state, uint8_t flags){
         ILLEGAL_OP;
     }
     if (flags & PARITY_FLAG){
-        uint8_t pf = 0;
+        uint8_t pf = 1;
         // checking only for the fist 8 bytes
         uint8_t rr = final_state & 0xFF;
         // using xor to toggle the parity flag
@@ -178,14 +178,10 @@ void set_flags(cpu_state* cpu ,uint32_t final_state, uint8_t flags){
             pf ^= (rr&1);
             rr >>= 1;
         }
-        if (!(pf&1)){
-            cpu->PSW.parity = 1;
-        }
+        cpu->PSW.parity = pf;
     }
     if (flags & CARRY_FLAG){
-        if ((final_state & 0x100) != 0){
-            cpu->PSW.carry = 1;
-        }
+        cpu->PSW.carry = (final_state & 0x100) ? 1 : 0;
     }
     return;
 }
@@ -497,7 +493,7 @@ int JCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
 int RET_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     if(op_code == 0xC9){
         cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
-        cpu->SP -= 2;
+        cpu->SP += 2;
         DECOMPILE_PRINT(base_PC, "%s\n", "RET");
     } else {
         ILLEGAL_OP;
@@ -518,7 +514,7 @@ int RCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     DECOMPILE_PRINT(base_PC, "RET Cond(%x)\n", (op_code & 0x38) >> 3);
     if(condition_check(cpu, (op_code & 0x38) >> 3)){
         cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
-        cpu->SP -= 2;
+        cpu->SP += 2;
     }
     return 1;
 }
@@ -797,12 +793,14 @@ int STA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  */
 int INR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x38) >> 3;
-    uint16_t temp = cpu->ACC;
-    temp++;
-    // Update Stat Regs
-    set_flags(cpu, temp, (SIGN_FLAG | PARITY_FLAG | ZERO_FLAG));
-    aux_flag_set_add(cpu, cpu->ACC, 1);
-    cpu->ACC = (uint8_t)temp;
+    uint16_t target_data = *(ref_byte_reg(cpu, reg_patt));
+    uint16_t base_data = target_data;
+    // Update The data
+    target_data += 1;
+    *(ref_byte_reg(cpu, reg_patt)) = (uint8_t)target_data;
+    // Update Flags
+    set_flags(cpu, target_data, SIGN_FLAG | ZERO_FLAG | PARITY_FLAG );
+    aux_flag_set_add(cpu, base_data, +1);
     DECOMPILE_PRINT(base_PC, "INR Reg(%x)\n", reg_patt);
     return 1;
 }
@@ -1400,6 +1398,30 @@ int RST_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     return 1;
 }
 
+/**
+ * @brief (Exchange stack top with H and L)
+ * (L) <--> ((SP));
+ * (H) <--> ((SP) + 1);
+ * The content of the L register is exchanged with the
+ * content of the memory location whose address is
+ * specified by the content of register SP. The content
+ * of the H register is exchanged with the content of the
+ * memory location whose address is one more than the
+ * content of register SP.
+ * 
+ * @param cpu 
+ * @param base_PC 
+ * @param op_code 
+ * @return int 
+ */
+int SPHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+    uint16_t temp = cpu->HL;
+    cpu->HL = short_mem_read(&cpu->mem, cpu->SP);
+    short_mem_write(&cpu->mem, cpu->SP, temp);
+    DECOMPILE_PRINT(base_PC, "%s\n", "SPHL");
+    return 1;
+}
+
 
 instt_8080_op opcode_lookup[0x100] = {
     [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
@@ -1651,6 +1673,7 @@ instt_8080_op opcode_lookup[0x100] = {
     [0xF6] = {ORI_WRAP, 7, 2},
     [0xF7] = {RST_WRAP, 11, 1},
     [0xF8] = {RCon_WRAP, 11, 1},
+    [0xF9] = {SPHL_WRAP, 5, 1},
     [0xFA] = {JCon_WRAP, 10, 3},
     [0xFB] = {EI_WRAP, 4, 1},
     [0xFC] = {CCon_WRAP, 17, 3},

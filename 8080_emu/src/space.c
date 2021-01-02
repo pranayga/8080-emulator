@@ -20,7 +20,10 @@
 #include "cpu_8080.h"
 #include "debug.h"
 
+#include <signal.h>
+
 #define ALIGNED_PREFIX (1<<16)
+#define ROM_OFFSET 0x0
 
 // Major Helper Functions
 int copy_invaders_rom(char *path, cpu_state* cpu);
@@ -30,7 +33,7 @@ int main(){
     WARN(0, "%s\n", "Hello from Warning....")
 
     // initializing a New CPU instance
-    cpu_state* cpu = init_cpu_8080(0);  // For now don't know where PC initially points
+    cpu_state* cpu = init_cpu_8080(ROM_OFFSET);  // For now don't know where PC initially points
 
     // memory Map the ROM
     char* rom_path = "./invaders_rom";
@@ -40,13 +43,12 @@ int main(){
         exit(-1);
     }
 
-    // Set PC to start of the ROM text Offset
-    cpu->PC = 0;
     // Exec ROM FILE
     // printf("Starting Decompiling......\n");
     // uint16_t next_PC = 0;
     // while(decompile_inst(cpu, &next_PC) == 1){}
-    printf("Starting Exec......\n");
+    
+    // printf("Starting Exec......\n");
     UNUSED char temp;
     int num_to_exec;
     printf("Enter Num of Inst to skip: ");
@@ -99,7 +101,7 @@ int copy_invaders_rom(char *path, cpu_state* cpu){
 
     // Memory mapping
     cpu->mem.base = aligned_alloc(ALIGNED_PREFIX, UINT16_MAX);
-    if (read(FD, cpu->mem.base, cpu->rom_size) == 0){
+    if (read(FD, cpu->mem.base + ROM_OFFSET, cpu->rom_size) == 0){
         WARN(0, "%s\n", "ROM_LOAD_FAILED.\n");
         return 0;
     }// Map invaders.efgh
