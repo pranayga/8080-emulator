@@ -23,7 +23,7 @@
 #include <signal.h>
 
 #define ALIGNED_PREFIX (1<<16)
-#define ROM_OFFSET 0x100
+#define ROM_OFFSET 0x0
 
 // Major Helper Functions
 int copy_invaders_rom(char *path, cpu_state* cpu);
@@ -49,27 +49,17 @@ int main(){
     // while(decompile_inst(cpu, &next_PC) == 1){}
     
     // printf("Starting Exec......\n");
-    // UNUSED char temp;
-    // int num_to_exec;
-    // printf("Enter Num of Inst to skip: ");
-    // scanf("%d", &num_to_exec);
-    // num_to_exec--;
-    // while(exec_inst(cpu) == 1){
-    //     if((--num_to_exec)>0){
-    //         continue;
-    //     }
-    //     print_state(*cpu);
-    //     temp = getc(stdin);
-    // }
-
-    printf("Starting DEBUG Exec......\n");
-    *(uint8_t*)(cpu->mem.base + 0x1AD) = 0x7;
+    UNUSED char temp;
+    int num_to_exec;
+    printf("Enter Num of Inst to skip: ");
+    scanf("%d", &num_to_exec);
+    num_to_exec--;
     while(exec_inst(cpu) == 1){
-        if(cpu->PC == 0x0689 || cpu->PC > 0x06AB){
-            printf("Emulator Failed. Dumping & execpting.....\n");
-            print_state(*cpu);
-            raise(SIGINT);
+        if((--num_to_exec)>0){
+            continue;
         }
+        print_state(*cpu);
+        temp = getc(stdin);
     }
 
     // free the buffers.
@@ -97,8 +87,7 @@ int copy_invaders_rom(char *path, cpu_state* cpu){
     char file_path[256];
     int FD;
     
-    // sprintf(file_path, "%s/%s", path, "invaders.hgfe");
-    sprintf(file_path, "%s", "debug.bin");
+    sprintf(file_path, "%s/%s", path, "invaders.hgfe");
     if (stat(file_path, &romstats) == -1) {
         WARN(0, "%s\n", "stat failure");
         return 0;

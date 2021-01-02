@@ -343,25 +343,10 @@ int CALL_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
     switch (op_code)
     {
     case 0xCD:
-        // BSOD debug Print
-        if(short_mem_read(&cpu->mem, base_PC+1) == 0x05){
-            if(cpu->C == 9){
-                uint16_t offset = cpu->DE;
-                char *str = (char*) mem_ref(&cpu->mem, offset+3);
-                while (*str != '$')    
-                    printf("%c", *str++);    
-                printf("\n"); 
-            } else if (cpu->C == 2){
-                printf("Print char routine called\n");
-            }
-        } else if(short_mem_read(&cpu->mem, base_PC+1) == 0x00){
-             exit(0);
-        } else {
-            cpu->SP -= 2;
-            short_mem_write(&cpu->mem, cpu->SP, cpu->PC);       // Saving Return Addr
-            cpu->PC = short_mem_read(&cpu->mem, base_PC+1);     // Reading the new PC
-            DECOMPILE_PRINT(base_PC, "CALL %x\n", cpu->PC );    // Logging
-        }
+        cpu->SP -= 2;
+        short_mem_write(&cpu->mem, cpu->SP, cpu->PC);       // Saving Return Addr
+        cpu->PC = short_mem_read(&cpu->mem, base_PC+1);     // Reading the new PC
+        DECOMPILE_PRINT(base_PC, "CALL %x\n", cpu->PC );    // Logging
         break;
     default:
         // There was CALL at 0x[D-F]D which didn't have stuff
