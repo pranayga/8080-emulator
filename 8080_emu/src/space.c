@@ -20,33 +20,51 @@
 #include "cpu_8080.h"
 #include "debug.h"
 
+#include <signal.h>
+
+#define ALIGNED_PREFIX (1<<16)
+#define ROM_OFFSET 0x0
+
 // Major Helper Functions
-int mmap_invaders(char *path, cpu_state* cpu);
+int copy_invaders_rom(char *path, cpu_state* cpu);
 
 int main(){
     DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
     WARN(0, "%s\n", "Hello from Warning....")
 
     // initializing a New CPU instance
-    cpu_state* cpu = init_cpu_8080(0);  // For now don't know where PC initially points
+    cpu_state* cpu = init_cpu_8080(ROM_OFFSET);  // For now don't know where PC initially points
 
     // memory Map the ROM
     char* rom_path = "./invaders_rom";
     int rom_FD;
-    if ((rom_FD = mmap_invaders(rom_path, cpu)) == -1){
+    if ((rom_FD = copy_invaders_rom(rom_path, cpu)) == -1){
         fprintf(stderr, "Critical Error: Rom Load Failed.\n");
         exit(-1);
     }
 
-    // Set PC to start of the ROM text Offset
-    cpu->PC = 0;
     // Exec ROM FILE
-    while(exec_inst(cpu)==1){}
-
-    // Unmap the files and free the buffers.
-    munmap(cpu->mem.base, cpu->rom_size); // UnMap invaders.x
-    close(rom_FD);
+    // printf("Starting Decompiling......\n");
+    // uint16_t next_PC = 0;
+    // while(decompile_inst(cpu, &next_PC) == 1){}
     
+    // printf("Starting Exec......\n");
+    UNUSED char temp;
+    int num_to_exec;
+    printf("Enter Num of Inst to skip: ");
+    scanf("%d", &num_to_exec);
+    num_to_exec--;
+    while(exec_inst(cpu) == 1){
+        if((--num_to_exec)>0){
+            continue;
+        }
+        print_state(*cpu);
+        temp = getc(stdin);
+    }
+
+    // free the buffers.
+    close(rom_FD);
+    free(cpu->mem.base);
     free(cpu);
     return 0;
 }
@@ -54,14 +72,14 @@ int main(){
 // Helper Functions
 
 /**
- * @brief Memory maps the invaders ROM into the correct memory locations.
+ * @brief Copies the invaders ROM into the correct memory locations.
  * The way memory is mapped is documented at: http://www.emutalk.net/threads/38177-Space-Invaders
  * 
- * @param path to the folder containing the 4 ROM Chunks
+ * @param path to the folder containing the ROM
  * @param cpu pointer to the CPU instance executing the ROM
  * @return int -1 if fail, array of file descriptors if pass
  */
-int mmap_invaders(char *path, cpu_state* cpu){
+int copy_invaders_rom(char *path, cpu_state* cpu){
     assert(cpu!=NULL);
     assert(path!=NULL);
 
@@ -82,10 +100,10 @@ int mmap_invaders(char *path, cpu_state* cpu){
    }
 
     // Memory mapping
-    if ((cpu->mem.base = mmap((caddr_t)0, cpu->rom_size, PROT_READ, 
-                                    MAP_PRIVATE, FD, 0)) ==  MAP_FAILED){
-            WARN(0, "%s\n", "MAPPING FAILED.\n");
-            return 0;
+    cpu->mem.base = aligned_alloc(ALIGNED_PREFIX, UINT16_MAX);
+    if (read(FD, cpu->mem.base + ROM_OFFSET, cpu->rom_size) == 0){
+        WARN(0, "%s\n", "ROM_LOAD_FAILED.\n");
+        return 0;
     }// Map invaders.efgh
     
     return FD;

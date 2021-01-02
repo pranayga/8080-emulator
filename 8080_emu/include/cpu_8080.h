@@ -29,18 +29,56 @@ typedef struct {
 } program_status_word;
 
 /**
+ * @brief ENUMS for PSW_FLAGS
+ * 
+ */
+typedef enum {
+    SIGN_FLAG   = 1 << 0,
+    ZERO_FLAG   = 1 << 1,
+    AUX_FLAG    = 1 << 3,
+    PARITY_FLAG = 1 << 5,
+    CARRY_FLAG  = 1 << 7,
+} flag_bits;
+/** @brief All but the aux flag options */
+# define ALL_BUT_AUX_FLAG (SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG)
+
+/**
+ * @brief different condition checks for JMP, conditional OPS
+ * 
+ */
+typedef enum {
+    NZ_check    = 0x0, /** not zero (Z = 0) */
+    Z_check     = 0x1, /** zero (2 = 1) */
+    NC_check    = 0x2, /** no carry (CY = 0) */
+    C_check     = 0x3, /** carry (CY = 1) */
+    PO_check    = 0x4, /** parity odd (P = 0) */
+    PE_check    = 0x5, /** parity even (P = 1) */
+    P_check     = 0x6, /** plus (Sign = 0) */
+    M_check     = 0x7, /** minus(Sign = 1) */
+} condition_flags;
+
+/**
  * @brief cpu_state: This structure keeps runtime state of all the
  * registers in the CPU.
  */
 typedef struct {
     ///@{
     /** General Purpose Registers in CPU */
-    uint8_t B;      /**< Register 0, Pair B */
-    uint8_t C;      /**< Register 1, Pair B */
-    uint8_t D;      /**< Register 2, Pair D */
-    uint8_t E;      /**< Register 3, Pair D */
-    uint8_t H;      /**< Register 4, Pair H */
-    uint8_t L;      /**< Register 5, Pair H */
+    union{
+        struct {
+            uint8_t C;      /**< Register 1, Pair B */
+            uint8_t B;      /**< Register 0, Pair B */
+            uint8_t E;      /**< Register 3, Pair D */
+            uint8_t D;      /**< Register 2, Pair D */
+            uint8_t L;      /**< Register 5, Pair H */
+            uint8_t H;      /**< Register 4, Pair H */
+        };
+        struct {
+            uint16_t BC;    /**< Extended Reg Pair BC */
+            uint16_t DE;    /**< Extended Reg Pair DE */
+            uint16_t HL;    /**< Extended Reg Pair HL */
+        };
+    };
     ///@}
     // TODO: Add The memory ref reg 6!?
     uint8_t ACC;                /**< Register 7 */
@@ -80,6 +118,31 @@ cpu_state* init_cpu_8080(uint16_t pc);
  * @return int 
  */
 int exec_inst(cpu_state* cpu);
+
+/**
+ * @brief Recompile mode.
+ * 
+ * @param cpu 
+ * @param next_inst 
+ * @return int 
+ */
+int decompile_inst(cpu_state* cpu, uint16_t* next_inst);
+
+/**
+ * @brief Function to write data to the IO port
+ * 
+ * @param port where the data is written to
+ * @param data which is written
+ */
+void io_machine_OUT(uint8_t port, uint16_t data);
+
+/**
+ * @brief Function to read a byte of data from the port
+ * 
+ * @param port from which the data is read
+ * @return uint8_t 
+ */
+uint8_t io_machine_IN(uint8_t port);
 
 /**
  * @brief Print the state of CPU
