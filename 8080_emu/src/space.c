@@ -20,6 +20,8 @@
 #include "cpu_8080.h"
 #include "debug.h"
 
+#include <signal.h>
+
 #define ALIGNED_PREFIX (1<<16)
 #define ROM_OFFSET 0x100
 
@@ -60,12 +62,13 @@ int main(){
     //     temp = getc(stdin);
     // }
 
-    printf("Starting Exec......\n");
+    printf("Starting DEBUG Exec......\n");
+    *(uint8_t*)(cpu->mem.base + 0x1AD) = 0x7;
     while(exec_inst(cpu) == 1){
-        if(cpu->PC == 0x0689){
-            printf("Emulator Failed. Dumping & Dying.....\n");
+        if(cpu->PC == 0x0689 || cpu->PC > 0x06AB){
+            printf("Emulator Failed. Dumping & execpting.....\n");
             print_state(*cpu);
-            exit(-2);
+            raise(SIGINT);
         }
     }
 
