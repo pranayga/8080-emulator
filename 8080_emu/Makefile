@@ -15,7 +15,7 @@ SRC_DIR		= src
 DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/opcodes_8080.h $(INC_DIR)/debug.h $(INC_DIR)/memory_8080.h
 
 ###### Build Specs #####################
-CFLAGS					= 
+CFLAGS					= `sdl2-config --libs --cflags`
 COMPILER_ERROR_FLAGS 	= -Wall -Werror -Wshadow -Wextra -Wunused
 LIBS 					=
 # DEBUGGING is enabled by default, you can reduce binary size by disabling the

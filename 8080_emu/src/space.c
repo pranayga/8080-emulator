@@ -22,16 +22,38 @@
 
 #include <signal.h>
 
+#include <stdio.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_timer.h>
+
 #define ALIGNED_PREFIX (1<<16)
 #define ROM_OFFSET 0x0
 
+// Invaders Stuff
+#define WINDOW_WIDTH (256)
+#define WINDOW_HEIGHT (224)
+
 // Major Helper Functions
 int copy_invaders_rom(char *path, cpu_state* cpu);
+// SDL Init
+SDL_Window * init_game_window();
+void destroy_game_window(SDL_Window *win);
 
 int main(){
     DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
-    WARN(0, "%s\n", "Hello from Warning....")
 
+    SDL_Window *game_win = init_game_window();
+    if(game_win == 0x0){
+        printf("Critical: Error opening Game window.\n");
+        exit (-1);
+    }
+    
+    // wait a few seconds
+    SDL_Delay(5000);
+    
+    // Destroy
+    destroy_game_window(game_win);
+    
     // initializing a New CPU instance
     cpu_state* cpu = init_cpu_8080(ROM_OFFSET);  // For now don't know where PC initially points
 
@@ -43,24 +65,9 @@ int main(){
         exit(-1);
     }
 
-    // Exec ROM FILE
-    // printf("Starting Decompiling......\n");
-    // uint16_t next_PC = 0;
-    // while(decompile_inst(cpu, &next_PC) == 1){}
-    
+    // Actual Emulation Code
     // printf("Starting Exec......\n");
-    UNUSED char temp;
-    int num_to_exec;
-    printf("Enter Num of Inst to skip: ");
-    scanf("%d", &num_to_exec);
-    num_to_exec--;
-    while(exec_inst(cpu) == 1){
-        if((--num_to_exec)>0){
-            continue;
-        }
-        print_state(*cpu);
-        temp = getc(stdin);
-    }
+    // while(exec_inst(cpu) == 1){}
 
     // free the buffers.
     close(rom_FD);
@@ -107,4 +114,33 @@ int copy_invaders_rom(char *path, cpu_state* cpu){
     }// Map invaders.efgh
     
     return FD;
+}
+
+/***** SDL Helpers ***/
+
+SDL_Window * init_game_window(){
+    // attempt to initialize graphics and timer system
+    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) != 0)
+    {
+        printf("error initializing SDL: %s\n", SDL_GetError());
+        return 0x0;
+    }
+
+    SDL_Window* win = SDL_CreateWindow("Hello, CS50!",
+                                       SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    if (!win)
+    {
+        printf("error creating window: %s\n", SDL_GetError());
+        SDL_Quit();
+	    return 0x0;
+    }
+    return win;
+}
+
+void destroy_game_window(SDL_Window *win){
+    // clean up resources before exiting
+    SDL_DestroyWindow(win);
+    SDL_Quit();
 }
