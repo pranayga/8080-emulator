@@ -33,6 +33,11 @@ int main(){
         exit (-1);
     }
 
+    // The code only supports SDL_PIXELFORMAT_RGB888 window encoding
+    if(game_window->surf->format->format != SDL_PIXELFORMAT_RGB888){
+        printf("Window is using nonstandard PIXEL format. Please use SDL_PIXELFORMAT_RGB888\n");
+    }
+
     // memory Map the ROM
     char* rom_path = "./invaders_rom";
     int rom_FD;
@@ -40,6 +45,15 @@ int main(){
         fprintf(stderr, "Critical Error: Rom Load Failed.\n");
         exit(-1);
     }
+
+    // Init the screen to white color
+    uint32_t *pixels = game_window->surf->pixels;
+    for(uint32_t y = 0; y < WINDOW_HEIGHT; y++){
+        for(uint32_t x = 0; x < WINDOW_WIDTH; x++){
+            set_pixel(pixels, x, y, 1); 
+        }
+    }
+    SDL_UpdateWindowSurface(game_window->window);
 
     while(!game_window->quit_event){
         if(!cpu->halt && exec_inst(cpu) == 1){
@@ -53,7 +67,12 @@ int main(){
         if(SDL_PollEvent(&(game_window->event))){
             process_SDL_event(cpu, game_window);
         }
+
+        render_vram(cpu, game_window->pixels);
+        SDL_UpdateWindowSurface(game_window->window);
     }
+
+    DEBUG_PRINT("Do I have to lock: %x\n", SDL_MUSTLOCK(game_window->surf));
 
     // free the buffers.
     DEBUG_PRINT("%s\n", "Freeing SDL Mem");
@@ -111,6 +130,28 @@ void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
     }
 }
 
+void render_vram(cpu_state *cpu, uint32_t *pixels){
+    uint32_t pix_index = 0;
+    uintptr_t vram_start = (uintptr_t)mem_ref(&cpu->mem, VRAM_OFFSET);
+    uintptr_t vram_end = vram_start + VRAM_SIZE;
+    uint8_t vram_data;
+    for(;vram_start < vram_end; vram_start++){
+        vram_data = *(uint8_t*)(vram_start);
+        pixels[pix_index++] = (vram_data & 0x1) ? GREEN_PIXEL : BLACK_PIXEL;
+        pixels[pix_index++] = (vram_data & 0x2) >> 1 ? GREEN_PIXEL : BLACK_PIXEL;
+        pixels[pix_index++] = (vram_data & 0x4) >> 2 ? GREEN_PIXEL : BLACK_PIXEL;
+        pixels[pix_index++] = (vram_data & 0x8) >> 3 ? GREEN_PIXEL : BLACK_PIXEL;
+        pixels[pix_index++] = (vram_data & 0x16) >> 4 ? GREEN_PIXEL : BLACK_PIXEL;
+        pixels[pix_index++] = (vram_data & 0x32) >> 5 ? GREEN_PIXEL : BLACK_PIXEL;
+        pixels[pix_index++] = (vram_data & 0x64) >> 6 ? GREEN_PIXEL : BLACK_PIXEL;
+        pixels[pix_index++] = (vram_data & 0x128) >> 7 ? GREEN_PIXEL : BLACK_PIXEL;
+    }
+}
+
+void set_pixel(uint32_t *pixels, uint32_t x, uint32_t y, UNUSED uint8_t state){
+    pixels[x + y * WINDOW_WIDTH] = state ? ((y < 40 || y > 200) ? WHITE_PIXEL : GREEN_PIXEL) : BLACK_PIXEL;
+}
+
 invaders_window* init_game_window(){
     
     invaders_window* game_window = (invaders_window*)calloc(1, sizeof(invaders_window));    // Game Window
@@ -118,7 +159,7 @@ invaders_window* init_game_window(){
     // attempt to initialize graphics and timer system
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) != 0)
     {
-        printf("error initializing SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "error initializing SDL: %s\n", SDL_GetError());
         return 0x0;
     }
 
@@ -128,10 +169,19 @@ invaders_window* init_game_window(){
                                        WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if (!game_window->window)
     {
-        printf("error creating window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "error creating window: %s\n", SDL_GetError());
         SDL_Quit();
 	    return 0x0;
     }
+
+    game_window->surf = SDL_GetWindowSurface(game_window->window);
+    if (game_window->surf == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetWindowSurface() failed: %s", SDL_GetError());
+        exit(1);
+    }
+
+    game_window->pixels = game_window->surf->pixels;
+
     return game_window;
 }
 
