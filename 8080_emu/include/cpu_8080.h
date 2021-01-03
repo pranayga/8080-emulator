@@ -94,7 +94,8 @@ typedef struct {
     ///@{
     /** Additional state to make emulation smoother */
     v_memory mem; /**< mem pointer, points to vMemeory chunck */
-    uint16_t rom_size; /** Size of the ROM currenlty loaded */
+    uint16_t rom_size; /**< Size of the ROM currenlty loaded */
+    uint8_t halt; /**< the cpu is halted */
     ///@}
 } cpu_state;
 

@@ -17,45 +17,21 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <assert.h>
-#include "cpu_8080.h"
-#include "debug.h"
-
 #include <signal.h>
 
-#include <stdio.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_timer.h>
-
-#define ALIGNED_PREFIX (1<<16)
-#define ROM_OFFSET 0x0
-
-// Invaders Stuff
-#define WINDOW_WIDTH (256)
-#define WINDOW_HEIGHT (224)
-
-// Major Helper Functions
-int copy_invaders_rom(char *path, cpu_state* cpu);
-// SDL Init
-SDL_Window * init_game_window();
-void destroy_game_window(SDL_Window *win);
+#include "debug.h"
+#include "space.h"
 
 int main(){
     DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
-
-    SDL_Window *game_win = init_game_window();
-    if(game_win == 0x0){
+    
+    // initializing a New CPU instance
+    cpu_state* cpu = init_cpu_8080(ROM_OFFSET);                                         // For now don't know where PC initially points
+    invaders_window* game_window = init_game_window();
+    if(game_window->window == 0x0){
         printf("Critical: Error opening Game window.\n");
         exit (-1);
     }
-    
-    // wait a few seconds
-    SDL_Delay(5000);
-    
-    // Destroy
-    destroy_game_window(game_win);
-    
-    // initializing a New CPU instance
-    cpu_state* cpu = init_cpu_8080(ROM_OFFSET);  // For now don't know where PC initially points
 
     // memory Map the ROM
     char* rom_path = "./invaders_rom";
@@ -65,27 +41,32 @@ int main(){
         exit(-1);
     }
 
-    // Actual Emulation Code
-    // printf("Starting Exec......\n");
-    // while(exec_inst(cpu) == 1){}
+    while(!game_window->quit_event){
+        if(!cpu->halt && exec_inst(cpu) == 1){
+            // Stuff to do on successful exec
+        } else {
+            cpu->halt = 1;  // Explicity halt the CPU incase something 
+                            // fails
+        }
+
+        // Check if there have been any events
+        if(SDL_PollEvent(&(game_window->event))){
+            process_SDL_event(cpu, game_window);
+        }
+    }
 
     // free the buffers.
+    DEBUG_PRINT("%s\n", "Freeing SDL Mem");
+    destroy_game_window(game_window);
     close(rom_FD);
+    DEBUG_PRINT("%s\n", "Freeing RAM");
     free(cpu->mem.base);
+    DEBUG_PRINT("%s\n", "Freeing Cpu");
     free(cpu);
     return 0;
 }
 
 // Helper Functions
-
-/**
- * @brief Copies the invaders ROM into the correct memory locations.
- * The way memory is mapped is documented at: http://www.emutalk.net/threads/38177-Space-Invaders
- * 
- * @param path to the folder containing the ROM
- * @param cpu pointer to the CPU instance executing the ROM
- * @return int -1 if fail, array of file descriptors if pass
- */
 int copy_invaders_rom(char *path, cpu_state* cpu){
     assert(cpu!=NULL);
     assert(path!=NULL);
@@ -118,7 +99,22 @@ int copy_invaders_rom(char *path, cpu_state* cpu){
 
 /***** SDL Helpers ***/
 
-SDL_Window * init_game_window(){
+void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
+    DEBUG_PRINT("Recieved SDL Event: %x\n", game_window->event.type);
+    switch (game_window->event.type)
+    {
+    case SDL_QUIT:
+        game_window->quit_event = 1;
+        break;
+    default:
+        DEBUG_PRINT("%s\n", "Unhandled Event!");
+    }
+}
+
+invaders_window* init_game_window(){
+    
+    invaders_window* game_window = (invaders_window*)calloc(1, sizeof(invaders_window));    // Game Window
+
     // attempt to initialize graphics and timer system
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) != 0)
     {
@@ -126,21 +122,22 @@ SDL_Window * init_game_window(){
         return 0x0;
     }
 
-    SDL_Window* win = SDL_CreateWindow("Hello, CS50!",
+    game_window->window = SDL_CreateWindow("Space Invaders! Call Pandu",
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
                                        WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    if (!win)
+    if (!game_window->window)
     {
         printf("error creating window: %s\n", SDL_GetError());
         SDL_Quit();
 	    return 0x0;
     }
-    return win;
+    return game_window;
 }
 
-void destroy_game_window(SDL_Window *win){
+void destroy_game_window(invaders_window *game_window){
     // clean up resources before exiting
-    SDL_DestroyWindow(win);
+    SDL_DestroyWindow(game_window->window);
+    free(game_window);
     SDL_Quit();
 }

@@ -12,7 +12,7 @@ OBJ_DIR		= obj
 # Source Dirs
 INC_DIR		= include
 SRC_DIR		= src
-DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/opcodes_8080.h $(INC_DIR)/debug.h $(INC_DIR)/memory_8080.h
+DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/opcodes_8080.h $(INC_DIR)/debug.h $(INC_DIR)/memory_8080.h $(INC_DIR)/space.h
 
 ###### Build Specs #####################
 CFLAGS					= `sdl2-config --libs --cflags`

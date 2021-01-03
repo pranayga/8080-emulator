@@ -414,8 +414,8 @@ int MOV_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  */
 int HLT_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
     DECOMPILE_PRINT(base_PC, "%s\n", "HLT");
-    while (1) {}
-    return -1;
+    cpu->halt = 1;
+    return 1;
 }
 
 /**
