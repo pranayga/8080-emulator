@@ -128,8 +128,13 @@ void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
     case SDL_USEREVENT:
         /* and now we can call the function we wanted to call in the timer but couldn't because of the multithreading problems */
         if(game_window->event.user.code == 0){
-            render_vram(cpu, game_window->pixels);
-            SDL_UpdateWindowSurface(game_window->window);
+            // Pend the Intt based on event
+            cpu->pend_intt |= (uintptr_t)(game_window->event.user.data1);
+            // Update App window at Every Full update
+            if((uintptr_t)(game_window->event.user.data1) == full_2){
+                render_vram(cpu, game_window->pixels);
+                SDL_UpdateWindowSurface(game_window->window);
+            }
         }
         break;
     default:
@@ -138,16 +143,21 @@ void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
 }
 
 uint32_t update_vram_cb(UNUSED uint32_t interval, UNUSED void *param){
+    static uintptr_t update_state = half_1;
+
     SDL_Event event;
     SDL_UserEvent userevent;
 
     userevent.type = SDL_USEREVENT;
     userevent.code = 0;
+    userevent.data1 = (void*)update_state;
 
     event.type = SDL_USEREVENT;
     event.user = userevent;
 
     SDL_PushEvent(&event);
+
+    update_state = update_state == half_1 ? full_2 : half_1; // Toggling state
     return(interval);
 }
 

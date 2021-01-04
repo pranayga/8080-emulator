@@ -21,7 +21,7 @@
  * @brief wrapping for all the CPU opcodes for emulation
  * and easy calling.
  */
-typedef  int (* OP_WRAP)(cpu_state* cpu, uint16_t base_PC, uint8_t op_code);
+typedef  int (* OP_WRAP)(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code);
 
 /**
  * @brief a struct to define the meta data for intel 8080 opcode.
@@ -36,7 +36,7 @@ typedef struct {
 /**
  * @brief The bit pattern designating one of the registers 
  * A,B,C,D,E,H,L (DDD=destination, SSS=source)
- * 111 -> ACC,  000---101 -> B,C,D,E,H,L.
+ * 111 -> ACC, 000---101 -> B,C,D,E,H,L.
  * This function returns a reference to the bytes which helps
  * simulate the register
  * @param cpu 
@@ -249,7 +249,7 @@ program_status_word decompress_PSW(uint8_t status){
  * @param op_code of the instruction under execution
  * @return int 1 of success, 0 if fail
  */
-int UNDEFINED_OP_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int UNDEFINED_OP_WRAP(UNUSED cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     DECOMPILE_PRINT(base_PC, "(%x)This Opcode has not been initialized.\n", op_code);
     return -1;
 }
@@ -262,7 +262,7 @@ int UNDEFINED_OP_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code of the instruction under execution
  * @return int 1 of success, 0 if fail
  */
-int NOP_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int NOP_WRAP(UNUSED cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     DECOMPILE_PRINT(base_PC, "%s\n", "NOP");
     return 1;
 }
@@ -275,7 +275,7 @@ int NOP_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int LXI_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int LXI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     uint16_t imm_data = short_mem_read(&cpu->mem, base_PC+1);
     uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
@@ -294,7 +294,7 @@ int LXI_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int JMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int JMP_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     switch (op_code)
     {
     case 0xC3:
@@ -320,7 +320,7 @@ int JMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int MVI_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int MVI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x38 & op_code) >> 3;
     uint8_t imm_data = mem_read(&cpu->mem, base_PC+1);
     uint8_t* target_dest = ref_byte_reg(cpu, reg_patt);
@@ -339,7 +339,7 @@ int MVI_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int CALL_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int CALL_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     switch (op_code)
     {
     case 0xCD:
@@ -368,7 +368,7 @@ int CALL_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @note only register pairs rp=B (registers B and C·) or rp=D
  * (registers D and E) may be specified
  */
-int LDAX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int LDAX_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     if(reg_patt < 2){
         uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
@@ -393,7 +393,7 @@ int LDAX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int MOV_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int MOV_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t dest_reg_patt = (0x38 & op_code) >> 3;
     uint8_t src_reg_patt = (0x07 & op_code);
     uint8_t *dest_reg = ref_byte_reg(cpu, dest_reg_patt);
@@ -412,7 +412,7 @@ int MOV_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int HLT_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int HLT_WRAP(UNUSED cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     DECOMPILE_PRINT(base_PC, "%s\n", "HLT");
     cpu->halt = 1;
     return 1;
@@ -428,7 +428,7 @@ int HLT_WRAP(UNUSED cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int INX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int INX_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
     *target_dest += 1;
@@ -445,7 +445,7 @@ int INX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int DCR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int DCR_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t target_reg = (op_code & 0x38) >> 3;
     uint16_t target_data = *(ref_byte_reg(cpu, target_reg));
     uint16_t base_data = target_data;
@@ -467,7 +467,7 @@ int DCR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int JCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int JCon_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     if(condition_check(cpu, (0x38 & op_code)>>3)){
         cpu->PC = short_mem_read(&cpu->mem, base_PC+1);
     }
@@ -490,7 +490,7 @@ int JCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int RET_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int RET_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     if(op_code == 0xC9){
         cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
         cpu->SP += 2;
@@ -510,7 +510,7 @@ int RET_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int RCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int RCon_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     DECOMPILE_PRINT(base_PC, "RET Cond(%x)\n", (op_code & 0x38) >> 3);
     if(condition_check(cpu, (op_code & 0x38) >> 3)){
         cpu->PC = short_mem_read(&cpu->mem, cpu->SP);
@@ -527,7 +527,7 @@ int RCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int CMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int CMP_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint16_t acc_reg = cpu->ACC;
     uint16_t compare_src = *(ref_byte_reg(cpu, (op_code & 0x07)));
     // Perform Comparison
@@ -547,7 +547,7 @@ int CMP_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int CPI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int CPI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t acc_reg = cpu->ACC;
     uint16_t compare_src = mem_read(&cpu->mem, base_PC+1);
     // Perform Comparison
@@ -569,7 +569,7 @@ int CPI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int PUSH_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int PUSH_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     // Swap out SP for PSW.
     if(reg_patt == 0x3){
@@ -596,7 +596,7 @@ int PUSH_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int POP_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int POP_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     // Swap out SP for PSW.
     if(reg_patt == 0x3){
@@ -625,7 +625,7 @@ int POP_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int DAD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int DAD_WRAP(cpu_state* cpu, UNUSED  uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     uint16_t* target_dest = ref_short_reg(cpu, reg_patt);
     uint32_t temp = cpu->HL;
@@ -646,7 +646,7 @@ int DAD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int XCHG_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int XCHG_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t temp = cpu->HL;
     cpu->HL = cpu->DE;
     cpu->DE = temp;
@@ -662,7 +662,7 @@ int XCHG_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int OUT_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int OUT_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t port = mem_read(&cpu->mem, base_PC+1);
     io_machine_OUT(port, cpu->ACC);
     DECOMPILE_PRINT(base_PC, "OUT %x\n", port);
@@ -678,7 +678,7 @@ int OUT_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int IN_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int IN_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t port = mem_read(&cpu->mem, base_PC+1);
     cpu->ACC = io_machine_IN(port);
     DECOMPILE_PRINT(op_code, "IN %x\n", port);
@@ -693,7 +693,7 @@ int IN_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int STAX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int STAX_WRAP(cpu_state* cpu, UNUSED UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x30 & op_code) >> 4;
     if(reg_patt < 2){
         uint16_t* target_ref = ref_short_reg(cpu, reg_patt);
@@ -717,7 +717,7 @@ int STAX_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ANA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int ANA_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (0x07 & op_code);
     uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
     // Perform AND
@@ -741,7 +741,7 @@ int ANA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int LHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int LHLD_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t target_addr = short_mem_read(&cpu->mem, base_PC+1);
     cpu->HL = short_mem_read(&cpu->mem, target_addr);
     DECOMPILE_PRINT(base_PC, "LHLD %x\n", target_addr);
@@ -757,7 +757,7 @@ int LHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ANI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int ANI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
     uint8_t base_val = cpu->ACC;
     cpu->ACC &= target_data;
@@ -776,7 +776,7 @@ int ANI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int STA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int STA_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t target_loc = short_mem_read(&cpu->mem, base_PC+1); 
     mem_write(&cpu->mem, target_loc, cpu->ACC);
     DECOMPILE_PRINT(base_PC, "STA %x\n", target_loc);
@@ -791,7 +791,7 @@ int STA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int INR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int INR_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x38) >> 3;
     uint16_t target_data = *(ref_byte_reg(cpu, reg_patt));
     uint16_t base_data = target_data;
@@ -815,7 +815,7 @@ int INR_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int RRC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int RRC_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t lsb = 0x1 & cpu->ACC;
     cpu->ACC >>= 1;
     if(lsb){
@@ -837,7 +837,7 @@ int RRC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int LDA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int LDA_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t target_addr = short_mem_read(&cpu->mem, base_PC+1);
     cpu->ACC = short_mem_read(&cpu->mem, target_addr);
     DECOMPILE_PRINT(base_PC, "LDA %x\n", target_addr);
@@ -853,7 +853,7 @@ int LDA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int XRA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int XRA_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x07);
     uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
     uint16_t temp = (*target_reg) ^ cpu->ACC;
@@ -873,7 +873,7 @@ int XRA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int EI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int EI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     cpu->intt = 1;
     DECOMPILE_PRINT(base_PC, "%s\n", "EI");
     return 1;
@@ -887,7 +887,7 @@ int EI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int DI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int DI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     cpu->intt = 0;
     DECOMPILE_PRINT(base_PC, "%s\n", "DI");
     return 1;
@@ -902,7 +902,7 @@ int DI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int SHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int SHLD_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t target_addr = short_mem_read(&cpu->mem, base_PC+1);
     short_mem_write(&cpu->mem, target_addr, cpu->HL);
     DECOMPILE_PRINT(base_PC, "SHLD %x\n", target_addr);
@@ -917,7 +917,7 @@ int SHLD_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int DCX_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int DCX_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x30) >> 4;
     uint16_t* target_reg = ref_short_reg(cpu, reg_patt);
     (*target_reg)--;
@@ -934,7 +934,7 @@ int DCX_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int RLC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int RLC_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t msb = (cpu->ACC & 0x80) ? 1 : 0;
     cpu->ACC <<= 1;
     if(msb){
@@ -956,7 +956,7 @@ int RLC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int RAL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int RAL_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t msb = (cpu->ACC & 0x80) ? 1 : 0;
     cpu->ACC = (cpu->ACC << 1) | cpu->PSW.carry;
     if(msb){
@@ -977,7 +977,7 @@ int RAL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int RAR_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int RAR_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t lsb = cpu->ACC & 0x01;
     cpu->ACC = (cpu->ACC >> 1) | (cpu->PSW.carry ? 0x80 : 0x0);
     if(lsb){
@@ -1002,7 +1002,7 @@ int RAR_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int CCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int CCon_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     if(condition_check(cpu, (0x38 & op_code)>>3)){
         cpu->SP -= 2;
         short_mem_write(&cpu->mem, cpu->SP, cpu->PC);       // Saving Return Addr
@@ -1026,7 +1026,7 @@ int CCon_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int SBI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int SBI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
     uint16_t temp =  cpu->ACC;
     temp = temp - target_data - cpu->PSW.carry;
@@ -1049,7 +1049,7 @@ int SBI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ADD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int ADD_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x07);
     uint16_t temp = *(ref_byte_reg(cpu, reg_patt));
     temp += cpu->ACC;
@@ -1073,7 +1073,7 @@ int ADD_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ADI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int ADI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t temp = mem_read(&cpu->mem, base_PC+1);
     temp += cpu->ACC;
     // Set Flags
@@ -1096,7 +1096,7 @@ int ADI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ADC_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int ADC_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x07);
     uint16_t temp = *(ref_byte_reg(cpu, reg_patt));
     temp += cpu->ACC + cpu->PSW.carry;
@@ -1120,7 +1120,7 @@ int ADC_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ACI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int ACI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t temp = mem_read(&cpu->mem, base_PC+1);
     temp += cpu->ACC + cpu->PSW.carry;
     // Set Flags
@@ -1141,7 +1141,7 @@ int ACI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int SUB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int SUB_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x07);
     uint16_t temp = cpu->ACC;
     temp -= *(ref_byte_reg(cpu, reg_patt));
@@ -1165,7 +1165,7 @@ int SUB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int SUI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int SUI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t temp = cpu->ACC;
     temp -= mem_read(&cpu->mem, base_PC+1);
     // Set Flags
@@ -1188,7 +1188,7 @@ int SUI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int SBB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int SBB_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x07);
     uint16_t temp = cpu->ACC;
     temp -= (*(ref_byte_reg(cpu, reg_patt)) + cpu->PSW.carry);
@@ -1212,7 +1212,7 @@ int SBB_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ORA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int ORA_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     uint8_t reg_patt = (op_code & 0x07);
     uint8_t *target_reg = ref_byte_reg(cpu, reg_patt);
     uint16_t temp = (*target_reg) | cpu->ACC;
@@ -1234,7 +1234,7 @@ int ORA_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int XTHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int XTHL_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t temp = short_mem_read(&cpu->mem, cpu->SP);
     short_mem_write(&cpu->mem,cpu->SP,cpu->HL);
     cpu->HL = temp;
@@ -1255,7 +1255,7 @@ int XTHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int PCHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int PCHL_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     cpu->PC = cpu->HL;
     DECOMPILE_PRINT(base_PC, "%s\n", "PCHL");
     return 1;
@@ -1274,7 +1274,7 @@ int PCHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int ORI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int ORI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
      uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
     cpu->ACC |= target_data;
     set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
@@ -1296,7 +1296,7 @@ int ORI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int XRI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int XRI_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t target_data = mem_read(&cpu->mem, base_PC+1);
     cpu->ACC ^= target_data;
     set_flags(cpu, cpu->ACC, ALL_BUT_AUX_FLAG);
@@ -1313,7 +1313,7 @@ int XRI_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int CMA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int CMA_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     cpu->ACC = ~(cpu->ACC);
     DECOMPILE_PRINT(base_PC, "%s\n", "CMA");
     return 1;
@@ -1327,7 +1327,7 @@ int CMA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int CMC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int CMC_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     cpu->PSW.carry = !(cpu->PSW.carry);
     DECOMPILE_PRINT(base_PC, "%s\n", "CMC");
     return 1;
@@ -1341,7 +1341,7 @@ int CMC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int STC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int STC_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     cpu->PSW.carry = 1;
     DECOMPILE_PRINT(base_PC, "%s\n", "STC");
     return 1;
@@ -1355,7 +1355,7 @@ int STC_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int DAA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int DAA_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     if((cpu->ACC & 0xF) > 0x9 || cpu->PSW.aux){
         cpu->PSW.aux = 0;
         if(((cpu->ACC & 0xF) + 0x06) > 0xF){
@@ -1388,12 +1388,14 @@ int DAA_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int RST_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
+int RST_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, uint8_t op_code){
     cpu->SP -= 2;
     short_mem_write(&cpu->mem, cpu->SP, cpu->PC);       // Saving Return Addr
     // Generating new position
     uint16_t target_addr = ((op_code & 0x38) >> 3);     // Generate new target Addr
     cpu->PC = target_addr * 8;                          // Writing New PC
+    cpu->intt = 0;                                      // Disable Interrupts when execing Intt
+    // NOTE: This will be enabled by the INTT handler function.
     DECOMPILE_PRINT(base_PC, "RST %x\n", target_addr);  // Logging
     return 1;
 }
@@ -1414,7 +1416,7 @@ int RST_WRAP(cpu_state* cpu, uint16_t base_PC, uint8_t op_code){
  * @param op_code 
  * @return int 
  */
-int SPHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
+int SPHL_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint16_t temp = cpu->HL;
     cpu->HL = short_mem_read(&cpu->mem, cpu->SP);
     short_mem_write(&cpu->mem, cpu->SP, temp);
@@ -1424,7 +1426,7 @@ int SPHL_WRAP(cpu_state* cpu, uint16_t base_PC, UNUSED uint8_t op_code){
 
 
 instt_8080_op opcode_lookup[0x100] = {
-    [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},    // NOP Instruction
+    [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},   // NOP Instruction
     [0x01] = {LXI_WRAP, 10, 3},
     [0x02] = {STAX_WRAP, 7, 1},
     [0x03] = {INX_WRAP, 5, 1},

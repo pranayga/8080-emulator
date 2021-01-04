@@ -9,7 +9,9 @@
 #define ROM_OFFSET  0x0
 #define VRAM_OFFSET 0x2400
 #define VRAM_SIZE   0x1C00
-#define VRAM_DELAY  0x25    // 50 Hz for 1000 ms
+#define VRAM_DELAY  0x9     // !112 Hz for 1000 ms
+#define half_1      0x2     // Pending Intt to Call RST 1
+#define full_2      0x4     // Pending Intt to Call RST 2
 // Invaders Stuff
 #define WINDOW_WIDTH (256)
 #define WINDOW_HEIGHT (224)

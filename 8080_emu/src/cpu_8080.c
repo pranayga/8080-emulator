@@ -26,6 +26,26 @@ cpu_state* init_cpu_8080(uint16_t pc){
 }
 
 int exec_inst(cpu_state* cpu){
+
+    // Check if Intt Available, if so exec that instead
+    if(cpu->intt && cpu->pend_intt){
+        // Entering Intt Handler, disable Intt
+        cpu->intt = 0;
+        uint8_t index = 0;
+        for(uint16_t mask = 0x1; mask <= 0x8; mask <<= 1){
+            if(cpu->pend_intt & mask){
+                DEBUG_PRINT("%s\n", "!!!!!!!!!!!INTT!!!!!!!!");
+                uint8_t op_code = 0xC7 | (index << 3);
+                cpu->pend_intt &= (~mask);  // Marking Intt as handled
+                return RST_WRAP(cpu, 0xFFFF, op_code);
+            }
+            index++;
+        }
+        // Shoild never reach here
+        abort();
+    }
+
+    // If not, normal exec
     uint8_t Instt = mem_read(&cpu->mem, cpu->PC);
     uint16_t inital_pc_ptr = cpu->PC;
     cpu->PC += opcode_lookup[Instt].size;

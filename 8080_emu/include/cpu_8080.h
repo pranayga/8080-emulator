@@ -89,6 +89,7 @@ typedef struct {
     uint16_t SP;    /**< Stack Pointer */
     uint16_t PC;    /**< Program Counter */
     uint8_t intt;   /**< Interrupt status Reg */ //(Don't know if works)
+    uint8_t pend_intt; /**< Pending Interrupts */
     ///@}
 
     ///@{
