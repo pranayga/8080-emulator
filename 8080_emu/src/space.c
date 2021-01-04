@@ -166,16 +166,27 @@ void render_vram(cpu_state *cpu, uint32_t *pixels){
     uintptr_t vram_start = (uintptr_t)mem_ref(&cpu->mem, VRAM_OFFSET);
     uintptr_t vram_end = vram_start + VRAM_SIZE;
     uint8_t vram_data;
+    
+    // Inflate
+    static uint32_t temp_buff[WINDOW_WIDTH*WINDOW_HEIGHT];
     for(;vram_start < vram_end; vram_start++){
         vram_data = *(uint8_t*)(vram_start);
-        pixels[pix_index++] = (vram_data & 0x1) ? GREEN_PIXEL : BLACK_PIXEL;
-        pixels[pix_index++] = (vram_data & 0x2) >> 1 ? GREEN_PIXEL : BLACK_PIXEL;
-        pixels[pix_index++] = (vram_data & 0x4) >> 2 ? GREEN_PIXEL : BLACK_PIXEL;
-        pixels[pix_index++] = (vram_data & 0x8) >> 3 ? GREEN_PIXEL : BLACK_PIXEL;
-        pixels[pix_index++] = (vram_data & 0x16) >> 4 ? GREEN_PIXEL : BLACK_PIXEL;
-        pixels[pix_index++] = (vram_data & 0x32) >> 5 ? GREEN_PIXEL : BLACK_PIXEL;
-        pixels[pix_index++] = (vram_data & 0x64) >> 6 ? GREEN_PIXEL : BLACK_PIXEL;
-        pixels[pix_index++] = (vram_data & 0x128) >> 7 ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x1) ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x2) >> 1 ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x4) >> 2 ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x8) >> 3 ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x16) >> 4 ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x32) >> 5 ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x64) >> 6 ? GREEN_PIXEL : BLACK_PIXEL;
+        temp_buff[pix_index++] = (vram_data & 0x128) >> 7 ? GREEN_PIXEL : BLACK_PIXEL;
+    }
+
+    // Rotate
+    pix_index = 0;
+    for(int16_t x = (WINDOW_WIDTH - 1); x >= 0 ; x--){
+        for(uint16_t y = 0; y < WINDOW_HEIGHT; y++){
+            pixels[pix_index++] = temp_buff[x + (y * WINDOW_WIDTH)];
+        }
     }
 }
 
@@ -197,7 +208,7 @@ invaders_window* init_game_window(){
     game_window->window = SDL_CreateWindow("Space Invaders! Call Pandu",
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
-                                       WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+                                       WINDOW_HEIGHT, WINDOW_WIDTH, 0);
     if (!game_window->window)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "error creating window: %s\n", SDL_GetError());

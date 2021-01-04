@@ -1,7 +1,7 @@
 # Make File for 8080 emulation
 
 ######### Build Params #################
-DEBUG		= 1
+DEBUG		= 0
 MKDIR_P 	= mkdir -p
 DECOMPILE	= 1
 
@@ -24,7 +24,7 @@ ifeq ($(DEBUG), 1)
 	DEFINE_MACROS 	= -DDEBUG -g
 	OPTIMIZATION  	= -O0
 else
-	OPTIMIZATION 	= -O3
+	OPTIMIZATION 	= -O3 -finline-functions
 endif
 
 ifeq ($(DECOMPILE), 1)
