@@ -55,6 +55,9 @@ int main(){
     }
     SDL_UpdateWindowSurface(game_window->window);
 
+    // Setup the Diplay Update Timer with CB
+    game_window->vram_timer = SDL_AddTimer(VRAM_DELAY, update_vram_cb, NULL);
+
     while(!game_window->quit_event){
         if(!cpu->halt && exec_inst(cpu) == 1){
             // Stuff to do on successful exec
@@ -67,9 +70,6 @@ int main(){
         if(SDL_PollEvent(&(game_window->event))){
             process_SDL_event(cpu, game_window);
         }
-
-        render_vram(cpu, game_window->pixels);
-        SDL_UpdateWindowSurface(game_window->window);
     }
 
     DEBUG_PRINT("Do I have to lock: %x\n", SDL_MUSTLOCK(game_window->surf));
@@ -119,15 +119,36 @@ int copy_invaders_rom(char *path, cpu_state* cpu){
 /***** SDL Helpers ***/
 
 void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
-    DEBUG_PRINT("Recieved SDL Event: %x\n", game_window->event.type);
+    DEBUG_PRINT("Received SDL Event: %x\n", game_window->event.type);
     switch (game_window->event.type)
     {
     case SDL_QUIT:
         game_window->quit_event = 1;
         break;
+    case SDL_USEREVENT:
+        /* and now we can call the function we wanted to call in the timer but couldn't because of the multithreading problems */
+        if(game_window->event.user.code == 0){
+            render_vram(cpu, game_window->pixels);
+            SDL_UpdateWindowSurface(game_window->window);
+        }
+        break;
     default:
         DEBUG_PRINT("%s\n", "Unhandled Event!");
     }
+}
+
+uint32_t update_vram_cb(UNUSED uint32_t interval, UNUSED void *param){
+    SDL_Event event;
+    SDL_UserEvent userevent;
+
+    userevent.type = SDL_USEREVENT;
+    userevent.code = 0;
+
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+
+    SDL_PushEvent(&event);
+    return(interval);
 }
 
 void render_vram(cpu_state *cpu, uint32_t *pixels){
