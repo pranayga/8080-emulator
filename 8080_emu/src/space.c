@@ -26,7 +26,7 @@ int main(){
     DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
     
     // initializing a New CPU instance
-    cpu_state* cpu = init_cpu_8080(ROM_OFFSET);                                         // For now don't know where PC initially points
+    cpu_state* cpu = init_cpu_8080(ROM_OFFSET, &space_IN, &space_OUT);                                         // For now don't know where PC initially points
     invaders_window* game_window = init_game_window();
     if(game_window->window == 0x0){
         printf("Critical: Error opening Game window.\n");
@@ -116,10 +116,18 @@ int copy_invaders_rom(char *path, cpu_state* cpu){
     return FD;
 }
 
+uint8_t space_IN(uint8_t port){
+    DEBUG_PRINT("Space PORT_%x IN wrapper Triggered!\n", port);
+    return 0;
+}
+
+void space_OUT(uint8_t port, uint8_t data){
+    DEBUG_PRINT("Space PORT_%x OUT:%x wrapper Triggered!\n", port, data);
+}
+
 /***** SDL Helpers ***/
 
 void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
-    DEBUG_PRINT("Received SDL Event: %x\n", game_window->event.type);
     switch (game_window->event.type)
     {
     case SDL_QUIT:

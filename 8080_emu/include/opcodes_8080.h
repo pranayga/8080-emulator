@@ -664,7 +664,7 @@ int XCHG_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
  */
 int OUT_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t port = mem_read(&cpu->mem, base_PC+1);
-    io_machine_OUT(port, cpu->ACC);
+    cpu->OUT_Func(port, cpu->ACC);
     DECOMPILE_PRINT(base_PC, "OUT %x\n", port);
     return 1;
 }
@@ -680,7 +680,7 @@ int OUT_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
  */
 int IN_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     uint8_t port = mem_read(&cpu->mem, base_PC+1);
-    cpu->ACC = io_machine_IN(port);
+    cpu->ACC = cpu->IN_Func(port);
     DECOMPILE_PRINT(op_code, "IN %x\n", port);
     return 1;
 }

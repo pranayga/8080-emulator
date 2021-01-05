@@ -49,6 +49,9 @@ typedef struct {
  */
 int copy_invaders_rom(char *path, cpu_state* cpu);
 
+uint8_t space_IN(uint8_t port);
+void space_OUT(uint8_t port, uint8_t data);
+
 // SDL Init
 void set_pixel(uint32_t *pixels, uint32_t x, uint32_t y, uint8_t state);
 void render_vram(cpu_state *cpu, uint32_t *pixels);

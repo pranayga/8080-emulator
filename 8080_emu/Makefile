@@ -1,9 +1,9 @@
 # Make File for 8080 emulation
 
 ######### Build Params #################
-DEBUG		= 0
+DEBUG		= 1
 MKDIR_P 	= mkdir -p
-DECOMPILE	= 1
+DECOMPILE	= 0
 
 # Build Dir
 BUILD_DIR	= build
