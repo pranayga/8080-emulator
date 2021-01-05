@@ -20,6 +20,15 @@
 #define GREEN_PIXEL 0xFF00
 #define BLUE_PIXEL  0xFF
 #define BLACK_PIXEL 0x0
+// Key Mapping
+#define P1_START    SDLK_RETURN
+#define P2_START    SDLK_s
+#define P1_LEFT     SDLK_LEFT
+#define P1_RIGHT    SDLK_RIGHT
+#define P1_SHOOT    SDLK_UP
+#define P2_LEFT     SDLK_a
+#define P2_RIGHT    SDLK_d
+#define P2_SHOOT    SDLK_w
 
 typedef struct {
     SDL_Window *window;

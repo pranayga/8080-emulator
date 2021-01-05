@@ -137,6 +137,12 @@ void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
             }
         }
         break;
+    case SDL_KEYDOWN:
+        printf("Key: %c pressed, isfake: %d.\n", game_window->event.key.keysym.sym, game_window->event.key.repeat);
+        break;
+    case SDL_KEYUP:
+        printf("Key: %c Released.\n", game_window->event.key.keysym.sym);
+        break;
     default:
         DEBUG_PRINT("%s\n", "Unhandled Event!");
     }
