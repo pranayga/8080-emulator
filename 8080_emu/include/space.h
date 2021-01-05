@@ -21,6 +21,7 @@
 #define BLUE_PIXEL  0xFF
 #define BLACK_PIXEL 0x0
 // Key Mapping
+#define CREDIT_COIN SDLK_c
 #define P1_START    SDLK_RETURN
 #define P2_START    SDLK_s
 #define P1_LEFT     SDLK_LEFT
@@ -39,6 +40,26 @@ typedef struct {
     SDL_TimerID vram_timer;
 } invaders_window;
 
+typedef struct {
+    // Input Ports
+    uint8_t port_0;
+    uint8_t port_1;
+    uint8_t port_2;
+    // Output Ports
+    uint8_t port_3;
+    uint8_t port_5;
+    
+    // Shift Regs
+    uint8_t shift_config;
+    union{
+        struct{
+            uint8_t y;
+            uint8_t x;
+        };
+        uint16_t hidden_reg;
+    };
+} port_IO;
+
 /**
  * @brief Copies the invaders ROM into the correct memory locations.
  * The way memory is mapped is documented at: http://www.emutalk.net/threads/38177-Space-Invaders
@@ -51,6 +72,8 @@ int copy_invaders_rom(char *path, cpu_state* cpu);
 
 uint8_t space_IN(uint8_t port);
 void space_OUT(uint8_t port, uint8_t data);
+
+void process_key_event(SDL_KeyboardEvent key_event);
 
 // SDL Init
 void set_pixel(uint32_t *pixels, uint32_t x, uint32_t y, uint8_t state);

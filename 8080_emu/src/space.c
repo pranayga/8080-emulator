@@ -22,6 +22,8 @@
 #include "debug.h"
 #include "space.h"
 
+static port_IO space_docks;
+
 int main(){
     DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
     
@@ -32,6 +34,11 @@ int main(){
         printf("Critical: Error opening Game window.\n");
         exit (-1);
     }
+
+    // Init PORT IO
+    space_docks.port_0 = 0x0E; // Base
+    space_docks.port_1 = 0x09; // Base + Credit
+    space_docks.port_2 = 0x03; // SIX spaceShips
 
     // The code only supports SDL_PIXELFORMAT_RGB888 window encoding
     if(game_window->surf->format->format != SDL_PIXELFORMAT_RGB888){
@@ -118,11 +125,120 @@ int copy_invaders_rom(char *path, cpu_state* cpu){
 
 uint8_t space_IN(uint8_t port){
     DEBUG_PRINT("Space PORT_%x IN wrapper Triggered!\n", port);
+    switch (port)
+    {
+    case 0:
+        return space_docks.port_0;
+    case 1:
+        return space_docks.port_1;
+    case 2:
+        return space_docks.port_2;
+    case 3:
+        assert(space_docks.shift_config <= 7);
+        uint8_t temp = (uint8_t)((space_docks.hidden_reg)>>(8-space_docks.shift_config));
+        return temp;
+    default:
+        DEBUG_PRINT("Unusual Port_%x READ access.\n", port);
+        exit(-10);
+    }
     return 0;
 }
 
 void space_OUT(uint8_t port, uint8_t data){
     DEBUG_PRINT("Space PORT_%x OUT:%x wrapper Triggered!\n", port, data);
+    switch (port)
+    {
+    case 2:
+        assert(data<=7);
+        space_docks.shift_config = data;
+        break;
+    case 3:
+        space_docks.port_3 = data;
+        break;
+    case 4:
+        space_docks.y = space_docks.x;
+        space_docks.x = data;
+        break;
+    case 5:
+        space_docks.port_5 = data;
+        break;
+    case 6:
+        // Ignore Watchdog writes;
+        break;
+    default:
+        DEBUG_PRINT("Unusual Port_%x WRITE:%x access.\n", port, data);
+        exit(-10);
+    }
+}
+
+void process_key_event(SDL_KeyboardEvent key_event){
+    if(key_event.type == SDL_KEYDOWN){
+        switch (key_event.keysym.sym)
+        {
+        case CREDIT_COIN:
+            space_docks.port_1 |= 0x1;
+            break;
+        case P1_START:
+            space_docks.port_1 |= 0x1 << 0x2;
+            break;
+        case P2_START:
+            space_docks.port_1 |= 0x1 << 0x1;
+            break;
+        case P1_LEFT:
+            space_docks.port_1 |= 0x1 << 0x5;
+            break;
+        case P1_RIGHT:
+            space_docks.port_1 |= 0x1 << 0x6;
+            break;
+        case P1_SHOOT:
+            space_docks.port_1 |= 0x1 << 0x4;
+            break;
+        case P2_LEFT:
+            space_docks.port_2 |= 0x1 << 0x5;
+            break;
+        case P2_RIGHT:
+            space_docks.port_1 |= 0x1 << 0x6;
+            break;
+        case P2_SHOOT:
+            space_docks.port_1 |= 0x1 << 0x4;
+            break;
+        default:
+            break;
+        }
+    } else {
+        switch (key_event.keysym.sym)
+        {
+        case CREDIT_COIN:
+            space_docks.port_1 &= ~0x1;
+            break;
+        case P1_START:
+            space_docks.port_1 &= ~(0x1 << 0x2);
+            break;
+        case P2_START:
+            space_docks.port_1 &= ~(0x1 << 0x1);
+            break;
+        case P1_LEFT:
+            space_docks.port_1 &= ~(0x1 << 0x5);
+            break;
+        case P1_RIGHT:
+            space_docks.port_1 &= ~(0x1 << 0x6);
+            break;
+        case P1_SHOOT:
+            space_docks.port_1 &= ~(0x1 << 0x4);
+            break;
+        case P2_LEFT:
+            space_docks.port_2 &= ~(0x1 << 0x5);
+            break;
+        case P2_RIGHT:
+            space_docks.port_1 &= ~(0x1 << 0x6);
+            break;
+        case P2_SHOOT:
+            space_docks.port_1 &= ~(0x1 << 0x4);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 /***** SDL Helpers ***/
@@ -146,10 +262,14 @@ void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
         }
         break;
     case SDL_KEYDOWN:
-        printf("Key: %c pressed, isfake: %d.\n", game_window->event.key.keysym.sym, game_window->event.key.repeat);
+        DEBUG_PRINT("Key: %c pressed, isfake: %d.\n", game_window->event.key.keysym.sym, game_window->event.key.repeat);
+        if(!game_window->event.key.repeat){
+            process_key_event(game_window->event.key);
+        }
         break;
     case SDL_KEYUP:
-        printf("Key: %c Released.\n", game_window->event.key.keysym.sym);
+        DEBUG_PRINT("Key: %c Released.\n", game_window->event.key.keysym.sym);
+        process_key_event(game_window->event.key);
         break;
     default:
         DEBUG_PRINT("%s\n", "Unhandled Event!");
