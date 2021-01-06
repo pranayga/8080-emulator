@@ -17,15 +17,44 @@
 #include "opcodes_8080.h"
 
 // Main Externally visible Functions
-cpu_state* init_cpu_8080(uint16_t pc){
+cpu_state* init_cpu_8080(uint16_t pc, uint8_t (*in_cb)(uint8_t), void (*out_cb)(uint8_t, uint8_t)){
     // Malloc a new struct
     cpu_state* cpu = (cpu_state*)calloc(1, sizeof(cpu_state));
     cpu->PC = pc;
     cpu->SP = 0xF000;
+    cpu->IN_Func = &io_machine_IN;
+    cpu->OUT_Func = &io_machine_OUT;
+    // Swap the pointers if anything was passed by the
+    // initializer
+    if(in_cb != NULL){
+        cpu->IN_Func = in_cb;
+    }
+    if(out_cb != NULL){
+        cpu->OUT_Func = out_cb;
+    }
     return cpu;
 }
 
 int exec_inst(cpu_state* cpu){
+
+    // Check if Intt Available, if so exec that instead
+    if(cpu->intt && cpu->pend_intt){
+        // Entering Intt Handler, disable Intt
+        cpu->intt = 0;
+        uint8_t index = 0;
+        for(uint16_t mask = 0x1; mask <= 0x8; mask <<= 1){
+            if(cpu->pend_intt & mask){
+                uint8_t op_code = 0xC7 | (index << 3);
+                cpu->pend_intt &= (~mask);  // Marking Intt as handled
+                return RST_WRAP(cpu, 0xFFFF, op_code);
+            }
+            index++;
+        }
+        // Shoild never reach here
+        abort();
+    }
+
+    // If not, normal exec
     uint8_t Instt = mem_read(&cpu->mem, cpu->PC);
     uint16_t inital_pc_ptr = cpu->PC;
     cpu->PC += opcode_lookup[Instt].size;
@@ -56,13 +85,13 @@ int decompile_inst(cpu_state* cpu, uint16_t* next_inst){
     return ret;
 }
 
-void io_machine_OUT(UNUSED uint8_t port, UNUSED uint16_t data){
-    // DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_OUT");
+void io_machine_OUT(UNUSED uint8_t port, UNUSED uint8_t data){
+    DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_OUT");
     return;
 }
 
 uint8_t io_machine_IN(UNUSED uint8_t port){
-    // DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_IN");
+    DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_IN");
     return 0x0;
 }
 

@@ -3,7 +3,7 @@
 ######### Build Params #################
 DEBUG		= 1
 MKDIR_P 	= mkdir -p
-DECOMPILE	= 1
+DECOMPILE	= 0
 
 # Build Dir
 BUILD_DIR	= build
@@ -12,10 +12,10 @@ OBJ_DIR		= obj
 # Source Dirs
 INC_DIR		= include
 SRC_DIR		= src
-DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/opcodes_8080.h $(INC_DIR)/debug.h $(INC_DIR)/memory_8080.h
+DEPS		= $(INC_DIR)/cpu_8080.h $(INC_DIR)/opcodes_8080.h $(INC_DIR)/debug.h $(INC_DIR)/memory_8080.h $(INC_DIR)/space.h
 
 ###### Build Specs #####################
-CFLAGS					= 
+CFLAGS					= `sdl2-config --libs --cflags`
 COMPILER_ERROR_FLAGS 	= -Wall -Werror -Wshadow -Wextra -Wunused
 LIBS 					=
 # DEBUGGING is enabled by default, you can reduce binary size by disabling the
@@ -24,7 +24,7 @@ ifeq ($(DEBUG), 1)
 	DEFINE_MACROS 	= -DDEBUG -g
 	OPTIMIZATION  	= -O0
 else
-	OPTIMIZATION 	= -O3
+	OPTIMIZATION 	= -O3 -finline-functions
 endif
 
 ifeq ($(DECOMPILE), 1)

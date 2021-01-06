@@ -89,12 +89,20 @@ typedef struct {
     uint16_t SP;    /**< Stack Pointer */
     uint16_t PC;    /**< Program Counter */
     uint8_t intt;   /**< Interrupt status Reg */ //(Don't know if works)
+    uint8_t pend_intt; /**< Pending Interrupts */
+    ///@}
+
+    ///@{
+    /** IN/OUT port Wrappers **/
+    uint8_t (*IN_Func)(uint8_t);
+    void (*OUT_Func)(uint8_t, uint8_t);
     ///@}
 
     ///@{
     /** Additional state to make emulation smoother */
     v_memory mem; /**< mem pointer, points to vMemeory chunck */
-    uint16_t rom_size; /** Size of the ROM currenlty loaded */
+    uint16_t rom_size; /**< Size of the ROM currenlty loaded */
+    uint8_t halt; /**< the cpu is halted */
     ///@}
 } cpu_state;
 
@@ -103,13 +111,16 @@ typedef struct {
  * @brief Initialize a new cpu_8080 instance structure. Everything is initialized to 0.
  * 
  * @param pc Program counter initialization
+ * @param in_cb 
+ * @param out_cb 
  * 
  * @return cpu_state* Pointer to the Malloced CPU state.
  * @note 
  * - the user is responsible for freeing the memory (for the CPU) once it's done
  * - expects base to be initialized by the user to a 64KB aligned memory
+ * @return cpu_state* 
  */
-cpu_state* init_cpu_8080(uint16_t pc);
+cpu_state* init_cpu_8080(uint16_t pc, uint8_t (*in_cb)(uint8_t), void (*out_cb)(uint8_t, uint8_t));
 
 /**
  * @brief Executes the instruction pc is pointing to after incrementing it.
@@ -134,7 +145,7 @@ int decompile_inst(cpu_state* cpu, uint16_t* next_inst);
  * @param port where the data is written to
  * @param data which is written
  */
-void io_machine_OUT(uint8_t port, uint16_t data);
+void io_machine_OUT(uint8_t port, uint8_t data);
 
 /**
  * @brief Function to read a byte of data from the port
