@@ -325,7 +325,7 @@ void render_vram(cpu_state *cpu, uint32_t *pixels){
 }
 
 void set_pixel(uint32_t *pixels, uint32_t x, uint32_t y, UNUSED uint8_t state){
-    pixels[x + y * WINDOW_WIDTH] = state ? ((y < 40 || y > 200) ? WHITE_PIXEL : GREEN_PIXEL) : BLACK_PIXEL;
+    pixels[x + y * WINDOW_WIDTH] = state ? GREEN_PIXEL : BLACK_PIXEL;
 }
 
 invaders_window* init_game_window(){
