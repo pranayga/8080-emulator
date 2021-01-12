@@ -1,6 +1,6 @@
-# chip-8-emulator
+# 8080-emulator
 
-This repo contains worked out tutorials to learn software emulation. The main goal is to write a C based function CHIP-8 emulator. Post which we will move to emulation Nintendo's GameBoy in a separate Repo.
+This repo contains worked out tutorials to learn software emulation. The main goal is to write a C based functional 8080 emulator. Post which we will move to emulation Nintendo's GameBoy in a separate Repo.
 
 For now, let's get going with the tutorials on [Emulator 101](http://emulator101.com).
 > Note: These might changes as I learn more and currently may not be the best way to go about things. `But really what is?`
@@ -13,12 +13,12 @@ Let's start by following the Steps on [Emulator 101](http://emulator101.com).
 > Critical: Do not look at this until necessary, but here's a [completed version](https://github.com/herrecito/invaders) I came across this tutorial. But the **Useful links** section is actually quite useful.
 
 ### OpCode
-Emulator 101's Opcode is linked [here](http://www.emulator101.com/8080-by-opcode.html). But IMO, it gives too much away. There's always the [8080 system programming manual](http://www.nj7p.info/Manuals/PDFs/Intel/9800153B.pdf), but that might be a little too much so let's keep it aside for now. I think referring to below links would be more work and fruitful:
+Emulator 101's Opcode is linked [here](http://www.emulator101.com/8080-by-opcode.html). But IMO, it gives too much away. There's always the [8080 system manual](http://www.nj7p.info/Manuals/PDFs/Intel/9800153B.pdf), but that might be a little too much so let's keep it aside for now. I think referring to below links would be more work and fruitful:
 - https://gist.github.com/joefg/634fa4a1046516d785c9
 - https://pastraiser.com/cpu/i8080/i8080_opcodes.html
 - http://www.classiccmp.org/dunfield/r/8080.txt
 
-**To top it off**, this [programming manual](https://drakeor.com/uploads/8080-Programmers-Manual.pdf) seems quite useful, and small enough.
+**To top it off**, this [programming manual](https://drakeor.com/uploads/8080-Programmers-Manual.pdf) seems quite useful, and small enough for now.
 
 The tutorial starts by mentioning guides such as above, then says to go find the ROM. Here's what I got:
 - ROM Mirror : [C code](https://drakeor.com/uploads/invaders.zip)
@@ -36,13 +36,63 @@ Next, I would recommend you to read the programming manual (91 Page one). The fi
 > Note: While these are important individual steps, we'll go in a manner where we just implement enough to get started with the next step and then keep coming back for extensions. This is an important part of rapid prototype dev which I've been lacking in and is very much needed in today's world. So let's practice that!
 
 
-### Disassembling 8080 (JIT style) :laughing: 
+### Disassembling & Debugging 8080 
 
-Well, it's not really JIT. But we'll only extend it just in time like we ROM tries to use an instruction that hasn't been implemented yet. This would help us with debugging (smaller scope to look for bugs) and visible progress!
+Well let's get started. We'll first do an overall instruction base like [disass_1](http://www.emulator101.com/disassembler-pt-1.html). Then We'll the follow the [order of the posts](http://www.emulator101.com/emulator-shell.html), cross refering with Chapter 4 in the system manual.
+At the same time, we'll be using the ROM itself to figure out which instruction to emulate next. When we run the ROM and something doesn't work, that's the instruction to figure out! Just exec the ROM unless you hit an instruction which you've not implemented yet. Implement, then keep going.
 
-> Note: While I would highly recommend starting from scratch since you'll have to give the code organization and management some thought.
+Below is a example of decompile mode:
+```C
+int decompile_inst(cpu_state* cpu, uint16_t* next_inst){
+    uint8_t Instt = mem_read(&cpu->mem, (*next_inst));
+    cpu->PC = (*next_inst);
 
-> To make getting started easier, I can share my workspace setup with basic file structure, makefile etc which you can extend as we go together :smile:.
+    (*next_inst) += opcode_lookup[Instt].size;
+
+    uint16_t inital_pc_ptr = cpu->PC;
+ 
+    if(opcode_lookup[Instt].target_func == 0x0){
+         opcode_lookup[Instt].target_func = UNDEFINED_OP_WRAP;
+    }
+
+    int ret = opcode_lookup[Instt].target_func(cpu, inital_pc_ptr, Instt);
+    return ret;
+}
+```
+
+Once you implement all the instructions, how do you know if you've implemented the instructions correctly? Well as described in [finishing-cpu](http://www.emulator101.com/finishing-the-cpu-emulator.html) and [full-emulation](http://www.emulator101.com/full-8080-emulation.html), there are two major ways: 
+1. Use [online emulator](https://bluishcoder.co.nz/js8080/) to execute the ROM and match the trace with your offline version. This would help you point out the exact location where your execution differs. This would be useful for a detecting indepth bugs which cannot be detected by instruction level tests. However, you could have multiple broken instructions, making it harder to zero in to the cause.
+2. Use [Debug ROM](http://www.emulator101.com/files/cpudiag.asm) which execuate each instructions and checks if it has the expected behaviour. This should help you detect the majority of the issues. A couple of things to note:
+     * This ROM expects to start at 0x100 ROM ADDR
+     * Due to some funky issue, you might have to tweak the start point of the SP to a custom value to prevent it from corrupting the ROM.
+     * These minor details have been listed in the article above. Do refer.
+
+#### Interrupts
+
+At this point, lets assume we have a fully functioning emulator. Well do we? Currently our code runs at full speed, trying to get the instructions executed as fast as possible. This historically hasn't been the [best for games](https://en.wikipedia.org/wiki/Turbo_button). If you run your code right now, you'll notice that it's stuck in a loop `WaitOnDelay`. It would be helpful to look at [reverse engineering of the code](http://www.computerarcheology.com/Arcade/SpaceInvaders/Code.html), and probably you'll be waiting for the `isrDelay` variable. But what is that anyway?
+
+**Timing in Space Invaders**:
+So the question to ask here would be:
+> Who in the world updates this memory location?
+
+I would encourage you to look at the code and find out the answer. Try `Ctrl+F` for `isrDelay`, or `&isrDelay`.
+
+Okay, space invaders makes use of an `external Interrupt` in oder do the timing. Via the experiment above, you would have noticed that the memory location `20C0	isrDelay`, is updated at `address: 0019` which is part of `ScanLine224`. Now would be a great time to read the [hardware configuration of SpaceInvaders](http://www.computerarcheology.com/Arcade/SpaceInvaders/Hardware.html), since it will be very relavent now.
+
+You see, the there's an external interrupt every 1/2 frame point, where frame rate is 60Hz. This basically is a clock which triggers the `RST` command by setting the condition flag. Here's a snipped of the main code doing it:
+
+https://github.com/pranayga/8080-emulator/blob/19d87319b66cdb6b9b8c6cb387a3955eabbdc1c3/src/space.c#L252-L263
+
+Don't worry about the SDL_USEREVENT stuff. It's just a way to create user generated events using a timer.
+Exec loop consuming the `interrupt flag`:
+
+https://github.com/pranayga/8080-emulator/blob/19d87319b66cdb6b9b8c6cb387a3955eabbdc1c3/src/cpu_8080.c#L46-L50
+
+This enables us to implement a cpu unbound timer!
+
+#### PORT IO
+
+### SDL2 GUI
 
 ## Emulation Bookmarks
 - [Emulator 101 - Welcome](http://www.emulator101.com/)
