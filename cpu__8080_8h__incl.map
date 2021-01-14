@@ -1,0 +1,5 @@
+<map id="include/cpu_8080.h" name="include/cpu_8080.h">
+<area shape="rect" id="node1" title="This file simulates and disassembles part of 8080 processor." alt="" coords="5,5,139,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="33,155,111,181"/>
+<area shape="rect" id="node3" href="$memory__8080_8h.html" title="Memory abstraction for 8080 cpu." alt="" coords="63,80,177,107"/>
+</map>

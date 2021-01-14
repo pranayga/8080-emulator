@@ -1,0 +1,4 @@
+<map id="include/opcodes_8080.h" name="include/opcodes_8080.h">
+<area shape="rect" id="node1" title="C wrappers for major opcodes. Broken from cpu_8080 to better manage codebase." alt="" coords="5,5,167,32"/>
+<area shape="rect" id="node2" href="$cpu__8080_8c.html" title="This file contains a software abstraction of intel 8080 CPU, enough to run invaders." alt="" coords="31,80,141,107"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="include/cpu_8080.h" name="include/cpu_8080.h">
+<area shape="rect" id="node1" title="This file simulates and disassembles part of 8080 processor." alt="" coords="138,5,271,32"/>
+<area shape="rect" id="node2" href="$opcodes__8080_8h.html" title="C wrappers for major opcodes. Broken from cpu_8080 to better manage codebase." alt="" coords="5,80,167,107"/>
+<area shape="rect" id="node3" href="$cpu__8080_8c.html" title="This file contains a software abstraction of intel 8080 CPU, enough to run invaders." alt="" coords="75,155,185,181"/>
+<area shape="rect" id="node4" href="$space_8h_source.html" title=" " alt="" coords="242,80,354,107"/>
+<area shape="rect" id="node5" href="$space_8c.html" title="The main driver to run invaders, the ATARI game." alt="" coords="253,155,343,181"/>
+</map>

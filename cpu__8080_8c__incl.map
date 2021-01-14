@@ -1,0 +1,10 @@
+<map id="src/cpu_8080.c" name="src/cpu_8080.c">
+<area shape="rect" id="node1" title="This file contains a software abstraction of intel 8080 CPU, enough to run invaders." alt="" coords="163,5,273,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,80,68,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="283,304,361,331"/>
+<area shape="rect" id="node4" title=" " alt="" coords="144,80,204,107"/>
+<area shape="rect" id="node5" href="$debug_8h.html" title="Pandu&#39;s Debugging Macros." alt="" coords="229,80,295,107"/>
+<area shape="rect" id="node6" href="$cpu__8080_8h.html" title="This file simulates and disassembles part of 8080 processor." alt="" coords="289,155,377,181"/>
+<area shape="rect" id="node8" href="$opcodes__8080_8h.html" title="C wrappers for major opcodes. Broken from cpu_8080 to better manage codebase." alt="" coords="371,80,487,107"/>
+<area shape="rect" id="node7" href="$memory__8080_8h.html" title="Memory abstraction for 8080 cpu." alt="" coords="313,229,427,256"/>
+</map>

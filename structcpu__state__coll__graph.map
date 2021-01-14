@@ -1,0 +1,5 @@
+<map id="cpu_state" name="cpu_state">
+<area shape="rect" id="node1" title="cpu_state: This structure keeps runtime state of all the registers in the CPU." alt="" coords="109,95,187,121"/>
+<area shape="rect" id="node2" href="$structprogram__status__word.html" title="program_status_word: An exdended PSW for easy checks and sets of PSW without flagging." alt="" coords="5,5,152,32"/>
+<area shape="rect" id="node3" href="$structv__memory.html" title="Memory wrapper." alt="" coords="176,5,259,32"/>
+</map>

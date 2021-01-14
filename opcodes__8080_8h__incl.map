@@ -1,0 +1,6 @@
+<map id="include/opcodes_8080.h" name="include/opcodes_8080.h">
+<area shape="rect" id="node1" title="C wrappers for major opcodes. Broken from cpu_8080 to better manage codebase." alt="" coords="5,5,167,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="25,229,102,256"/>
+<area shape="rect" id="node3" href="$cpu__8080_8h.html" title="This file simulates and disassembles part of 8080 processor." alt="" coords="42,80,130,107"/>
+<area shape="rect" id="node4" href="$memory__8080_8h.html" title="Memory abstraction for 8080 cpu." alt="" coords="101,155,215,181"/>
+</map>

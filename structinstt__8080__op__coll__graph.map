@@ -1,0 +1,6 @@
+<map id="instt_8080_op" name="instt_8080_op">
+<area shape="rect" id="node1" title="a struct to define the meta data for intel 8080 opcode. Contains the binding to the functor and the c..." alt="" coords="97,184,199,211"/>
+<area shape="rect" id="node2" href="$structcpu__state.html" title="cpu_state: This structure keeps runtime state of all the registers in the CPU." alt="" coords="109,95,187,121"/>
+<area shape="rect" id="node3" href="$structprogram__status__word.html" title="program_status_word: An exdended PSW for easy checks and sets of PSW without flagging." alt="" coords="5,5,152,32"/>
+<area shape="rect" id="node4" href="$structv__memory.html" title="Memory wrapper." alt="" coords="176,5,259,32"/>
+</map>
