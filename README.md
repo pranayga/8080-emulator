@@ -111,7 +111,15 @@ Other than those clever `shift registers`, the rest should be good to implement.
 
 Feel free to look through the code if you want to look at a not so simple but interesting way of implementing it using `functors`. I intended to keep the code generic while supporting this idea. I think it's pretty neat. Setting `IN/OUT` backing stores correctly should allow your game to read keypresses and produce sound.
 
-## Emulation Bookmarks
+## Setup
+
+In order to run the code on your ubuntu box:
+* Clone the repo
+* `make install` - Install the packages required
+* `make extractROM` - Unzip the ROM
+* `make` - Run the Emulator
+
+## Emulation Bookmarks & Thanks
 - [Emulator 101 - Welcome](http://www.emulator101.com/)
 - [HOWTO: Writing a Computer Emulator](http://fms.komkon.org/EMUL8/HOWTO.html)
 - [Writing a CHIP-8 emulator with Rust and WebAssembly](https://blog.scottlogic.com/2017/12/13/chip8-emulator-webassembly-rust.html)

@@ -35,7 +35,7 @@ CFLAGS += $(OPTIMIZATION) $(DEFINE_MACROS)
 
 
 ######### Main Build ##################
-.PHONY: run debug build setup compile clean doc extractROM
+.PHONY: run debug build setup compile clean doc extractROM install
 
 run: build
 	@printf "Running invaders\n==================\n"
@@ -57,6 +57,11 @@ $(BUILD_DIR)/$(OBJ_DIR)/memory_8080.o: $(SRC_DIR)/memory_8080.c $(DEPS)
 
 $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o: $(SRC_DIR)/cpu_8080.c $(DEPS)
 	$(CC) -c -o $@ -I$(INC_DIR) $< $(CFLAGS) $(COMPILER_ERROR_FLAGS)
+
+
+######### Dependency Install ##########
+install:
+	sudo apt install build-essential zip libsdl2-2.0
 
 ######### RPM Extraction Rules ########
 setup:
