@@ -61,7 +61,8 @@ $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o: $(SRC_DIR)/cpu_8080.c $(DEPS)
 
 ######### Dependency Install ##########
 install:
-	sudo apt install build-essential zip libsdl2-2.0
+	sudo apt update
+	sudo apt install build-essential unzip libsdl2-2.0
 
 ######### RPM Extraction Rules ########
 setup:

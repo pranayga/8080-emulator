@@ -117,7 +117,7 @@ In order to run the code on your ubuntu box:
 * Clone the repo
 * `make install` - Install the packages required
 * `make extractROM` - Unzip the ROM
-* `make` - Run the Emulator
+* `make DEBUG=0 DECOMPILE=0` - Run the Emulator
 
 ## Emulation Bookmarks & Thanks
 - [Emulator 101 - Welcome](http://www.emulator101.com/)
