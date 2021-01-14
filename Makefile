@@ -35,7 +35,7 @@ CFLAGS += $(OPTIMIZATION) $(DEFINE_MACROS)
 
 
 ######### Main Build ##################
-.PHONY: run debug build setup compile clean doc extractROM install
+.PHONY: run debug build setup compile clean doc extractROM install docs
 
 run: build
 	@printf "Running invaders\n==================\n"
@@ -64,6 +64,10 @@ install:
 	sudo apt update
 	sudo apt install build-essential unzip libsdl2-2.0
 
+######### Make Docs ###################
+docs:
+	doxygen doc/Doxyfile
+
 ######### RPM Extraction Rules ########
 setup:
 	$(MKDIR_P) $(BUILD_DIR)
@@ -80,3 +84,4 @@ extractROM: invaders.zip
 clean:
 	-rm invaders
 	-rm -rf $(BUILD_DIR) core
+	-rm doxygen_warning
