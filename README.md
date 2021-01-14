@@ -38,8 +38,8 @@ Next, I would recommend you to read the programming manual (91 Page one). The fi
 
 ### Disassembling & Debugging 8080 
 
-Well let's get started. We'll first do an overall instruction base like [disass_1](http://www.emulator101.com/disassembler-pt-1.html). Then We'll the follow the [order of the posts](http://www.emulator101.com/emulator-shell.html), cross refering with Chapter 4 in the system manual.
-At the same time, we'll be using the ROM itself to figure out which instruction to emulate next. When we run the ROM and something doesn't work, that's the instruction to figure out! Just exec the ROM unless you hit an instruction which you've not implemented yet. Implement, then keep going.
+Well, let's get started. We'll first do an overall instruction base like [disass_1](http://www.emulator101.com/disassembler-pt-1.html). Then We'll follow the [order of the posts](http://www.emulator101.com/emulator-shell.html), cross-referring with Chapter 4 in the system manual.
+At the same time, we'll be using the ROM itself to figure out which instruction to emulate next. When we run the ROM and something doesn't work, that's the instruction to figure out! Just exec the ROM unless you hit an instruction that you've not implemented yet. Implement, then keep going.
 
 Below is a example of decompile mode:
 ```C
@@ -61,15 +61,15 @@ int decompile_inst(cpu_state* cpu, uint16_t* next_inst){
 ```
 
 Once you implement all the instructions, how do you know if you've implemented the instructions correctly? Well as described in [finishing-cpu](http://www.emulator101.com/finishing-the-cpu-emulator.html) and [full-emulation](http://www.emulator101.com/full-8080-emulation.html), there are two major ways: 
-1. Use [online emulator](https://bluishcoder.co.nz/js8080/) to execute the ROM and match the trace with your offline version. This would help you point out the exact location where your execution differs. This would be useful for a detecting indepth bugs which cannot be detected by instruction level tests. However, you could have multiple broken instructions, making it harder to zero in to the cause.
-2. Use [Debug ROM](http://www.emulator101.com/files/cpudiag.asm) which execuate each instructions and checks if it has the expected behaviour. This should help you detect the majority of the issues. A couple of things to note:
+1. Use [online emulator](https://bluishcoder.co.nz/js8080/) to execute the ROM and match the trace with your offline version. This would help you point out the exact location where your execution differs. This would be useful for detecting in-depth bugs that cannot be detected by instruction level tests. However, you could have multiple broken instructions, making it harder to zero into the cause.
+2. Use [Debug ROM](http://www.emulator101.com/files/cpudiag.asm) which executes each instruction and checks if it has the expected behavior. This should help you detect the majority of the issues. A couple of things to note:
      * This ROM expects to start at 0x100 ROM ADDR
      * Due to some funky issue, you might have to tweak the start point of the SP to a custom value to prevent it from corrupting the ROM.
      * These minor details have been listed in the article above. Do refer.
 
-#### Interrupts
+### Interrupts
 
-At this point, lets assume we have a fully functioning emulator. Well do we? Currently our code runs at full speed, trying to get the instructions executed as fast as possible. This historically hasn't been the [best for games](https://en.wikipedia.org/wiki/Turbo_button). If you run your code right now, you'll notice that it's stuck in a loop `WaitOnDelay`. It would be helpful to look at [reverse engineering of the code](http://www.computerarcheology.com/Arcade/SpaceInvaders/Code.html), and probably you'll be waiting for the `isrDelay` variable. But what is that anyway?
+At this point, let's assume we have a fully functioning emulator. Well, do we? Currently, our code runs at full speed, trying to get the instructions executed as fast as possible. This historically hasn't been the [best for games](https://en.wikipedia.org/wiki/Turbo_button). If you run your code right now, you'll notice that it's stuck in a loop `WaitOnDelay`. It would be helpful to look at [reverse engineering of the code](http://www.computerarcheology.com/Arcade/SpaceInvaders/Code.html), and probably you'll be waiting for the `isrDelay` variable. But what is that anyway?
 
 **Timing in Space Invaders**:
 So the question to ask here would be:
@@ -77,22 +77,36 @@ So the question to ask here would be:
 
 I would encourage you to look at the code and find out the answer. Try `Ctrl+F` for `isrDelay`, or `&isrDelay`.
 
-Okay, space invaders makes use of an `external Interrupt` in oder do the timing. Via the experiment above, you would have noticed that the memory location `20C0	isrDelay`, is updated at `address: 0019` which is part of `ScanLine224`. Now would be a great time to read the [hardware configuration of SpaceInvaders](http://www.computerarcheology.com/Arcade/SpaceInvaders/Hardware.html), since it will be very relavent now.
+Okay, space invaders makes use of an `external Interrupt` to do the timing. Via the experiment above, you would have noticed that the memory location `20C0	isrDelay`, is updated at `address: 0019` which is part of `ScanLine224`. Now would be a great time to read the [hardware configuration of SpaceInvaders](http://www.computerarcheology.com/Arcade/SpaceInvaders/Hardware.html), since it will be very relevant now.
 
-You see, the there's an external interrupt every 1/2 frame point, where frame rate is 60Hz. This basically is a clock which triggers the `RST` command by setting the condition flag. Here's a snipped of the main code doing it:
+You see, there's an external interrupt every 1/2 frame point, where the frame rate is 60Hz. This basically is a clock that triggers the `RST` command by setting the condition flag. Here's a [snippet of the main code](https://github.com/pranayga/8080-emulator/blob/19d87319b66cdb6b9b8c6cb387a3955eabbdc1c3/src/space.c#L252-L263) doing it.
 
-https://github.com/pranayga/8080-emulator/blob/19d87319b66cdb6b9b8c6cb387a3955eabbdc1c3/src/space.c#L252-L263
+Don't worry about the SDL_USEREVENT stuff. It's just a way to create user-generated events using a timer.
+Exec loop [consuming the `interrupt flag`](https://github.com/pranayga/8080-emulator/blob/19d87319b66cdb6b9b8c6cb387a3955eabbdc1c3/src/cpu_8080.c#L46-L50). This enables us to implement a CPU unbound timer!
 
-Don't worry about the SDL_USEREVENT stuff. It's just a way to create user generated events using a timer.
-Exec loop consuming the `interrupt flag`:
-
-https://github.com/pranayga/8080-emulator/blob/19d87319b66cdb6b9b8c6cb387a3955eabbdc1c3/src/cpu_8080.c#L46-L50
-
-This enables us to implement a cpu unbound timer!
-
-#### PORT IO
+Now you shouldn't be stuck in the loop anymore. Okay at this point, we have the major things in place. Some visual output would be nice. Let's have a look.
 
 ### SDL2 GUI
+
+For GUI, I used SDL2. Mainly because it has a C API and integrates nicely with our existing code. You might want to the following tutorials which might prove to be handy:
+* [General SDL Concepts](https://www.youtube.com/watch?v=yFLa3ln16w0) - A good intro to core concepts of SDL2
+* [Creating Custom Timer Event](https://wiki.libsdl.org/SDL_AddTimer) - This should help you generate the interrupts as 60Hz
+* [Direct Access to Window's Surface](https://benedicthenshaw.com/soft_render_sdl2.html) - Should help you with a way to directly access pixels for a window
+* [Key Stroke events](https://gigi.nullneuron.net/gigilabs/handling-keyboard-and-mouse-events-in-sdl2/) - Should Help you with the Keypress detection and event handling
+
+Few points of advice:
+* You will notice in the game docs that the memory that the game logic draws to is rotated by 90* clockwise. Hence, you will have to rotate it back to the upright location and then write to the game window's backing store
+*  You might want to read the `PORT IO` section too, after which it will make more sense.
+
+### PORT IO
+
+#### Dedicated Shift Hardware
+While working on the SDL2 GUI, you'll realize that to draw properly and efficiently, the game logic makes use of shift registers. But hold on a minute pandu, there are no registers in Intel 8080! You're right, that's why on out the `PORT` IO is used for that purpose. You can find more information [here](http://www.computerarcheology.com/Arcade/SpaceInvaders/Hardware.html).
+
+#### Other IO
+Other than those clever `shift registers`, the rest should be good to implement. you might wanna hotwire the `IN` and `OUT` instructions to custom versions that support the behavior specified [here](http://www.computerarcheology.com/Arcade/SpaceInvaders/Hardware.html).
+
+Feel free to look through the code if you want to look at a not so simple but interesting way of implementing it using `functors`. I intended to keep the code generic while supporting this idea. I think it's pretty neat. Setting `IN/OUT` backing stores correctly should allow your game to read keypresses and produce sound.
 
 ## Emulation Bookmarks
 - [Emulator 101 - Welcome](http://www.emulator101.com/)
