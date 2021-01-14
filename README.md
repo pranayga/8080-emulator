@@ -1,10 +1,13 @@
 # 8080-emulator
 
-This repo contains worked out tutorials to learn software emulation. The main goal is to write a C based functional 8080 emulator. Post which we will move to emulation Nintendo's GameBoy in a separate Repo.
+This repo contains worked out tutorials to learn software emulation. The main goal is to write a C based functional 8080 emulator. Post which we will move to emulation Nintendo's GameBoy in a separate Repo (or playstation maybe).
 
 For now, let's get going with the tutorials on [Emulator 101](http://emulator101.com).
 > Note: These might changes as I learn more and currently may not be the best way to go about things. `But really what is?`
 
+`ls /our_future`:
+
+![Sample Output window](assets/space_pandu.gif)
 
 ## Emulating 8080
 
