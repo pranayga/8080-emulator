@@ -65,8 +65,8 @@ install:
 	sudo apt install build-essential unzip libsdl2-2.0
 
 ######### Make Docs ###################
-docs:
-	doxygen doc/Doxyfile
+docs: setup
+	doxygen docs/Doxyfile
 
 ######### RPM Extraction Rules ########
 setup:
