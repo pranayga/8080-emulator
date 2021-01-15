@@ -1,3 +1,11 @@
+/**
+ * @file space.h
+ * @author Pranay Garg (pranayga@andrew.cmu.edu)
+ * @brief File containing #defines for spaceinvaders wrapper
+ * @version 0.1
+ * @date 2021-01-14
+ * 
+ */
 #ifndef SPACE_H
 #define SPACE_H
 

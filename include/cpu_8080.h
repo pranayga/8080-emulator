@@ -5,8 +5,6 @@
  * @version 0.1
  * @date 2020-12-20
  * 
- * @copyright Copyright (c) 2020 (CC0)
- * 
  */
 #ifndef CPU_8080_H
 #define CPU_8080_H
