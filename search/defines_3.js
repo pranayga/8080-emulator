@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['unused_315',['UNUSED',['../cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076',1,'cpu_8080.h']]]
+  ['illegal_5fop_318',['ILLEGAL_OP',['../opcodes__8080_8h.html#a20f9ae40ccad491ab110e0b574dbeda4',1,'opcodes_8080.h']]]
 ];

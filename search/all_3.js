@@ -11,10 +11,11 @@ var searchData=
   ['compress_5fpsw_22',['compress_PSW',['../opcodes__8080_8h.html#a282536a8f84e64e2c9a4a1546e6d85d0',1,'opcodes_8080.h']]],
   ['condition_5fcheck_23',['condition_check',['../opcodes__8080_8h.html#a2bf824532278a3dc744deff5ddee35d5',1,'opcodes_8080.h']]],
   ['condition_5fflags_24',['condition_flags',['../cpu__8080_8h.html#a206cb7924894edff9ab0954a5d3f010a',1,'cpu_8080.h']]],
-  ['copy_5finvaders_5from_25',['copy_invaders_rom',['../space_8c.html#a5ec5daa6156168e9456a44fd3bce5da5',1,'space.c']]],
+  ['copy_5finvaders_5from_25',['copy_invaders_rom',['../space_8h.html#a5ec5daa6156168e9456a44fd3bce5da5',1,'copy_invaders_rom(char *path, cpu_state *cpu):&#160;space.c'],['../space_8c.html#a5ec5daa6156168e9456a44fd3bce5da5',1,'copy_invaders_rom(char *path, cpu_state *cpu):&#160;space.c']]],
   ['cpi_5fwrap_26',['CPI_WRAP',['../opcodes__8080_8h.html#a4948debd4a84e03cc8983cb4f4bec497',1,'opcodes_8080.h']]],
   ['cpu_5f8080_2ec_27',['cpu_8080.c',['../cpu__8080_8c.html',1,'']]],
   ['cpu_5f8080_2eh_28',['cpu_8080.h',['../cpu__8080_8h.html',1,'']]],
   ['cpu_5fstate_29',['cpu_state',['../structcpu__state.html',1,'']]],
-  ['cycle_5fcount_30',['cycle_count',['../structinstt__8080__op.html#ad59f8b0916c7cb4e32c6c8f2e241697f',1,'instt_8080_op']]]
+  ['credit_5fcoin_30',['CREDIT_COIN',['../space_8h.html#ae75bf3100d3c0978aa186b05f72f877c',1,'space.h']]],
+  ['cycle_5fcount_31',['cycle_count',['../structinstt__8080__op.html#ad59f8b0916c7cb4e32c6c8f2e241697f',1,'instt_8080_op']]]
 ];

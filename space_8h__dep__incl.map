@@ -1,0 +1,4 @@
+<map id="include/space.h" name="include/space.h">
+<area shape="rect" id="node1" title="File containing #defines for spaceinvaders wrapper." alt="" coords="5,5,117,32"/>
+<area shape="rect" id="node2" href="$space_8c.html" title="The main driver to run invaders, the ATARI game." alt="" coords="17,80,106,107"/>
+</map>

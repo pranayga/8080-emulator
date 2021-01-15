@@ -1,0 +1,8 @@
+<map id="include/space.h" name="include/space.h">
+<area shape="rect" id="node1" title="File containing #defines for spaceinvaders wrapper." alt="" coords="109,5,221,32"/>
+<area shape="rect" id="node2" href="$cpu__8080_8h.html" title="This file simulates and disassembles part of 8080 processor." alt="" coords="5,80,93,107"/>
+<area shape="rect" id="node5" title=" " alt="" coords="118,80,213,107"/>
+<area shape="rect" id="node6" title=" " alt="" coords="237,80,368,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="11,229,88,256"/>
+<area shape="rect" id="node4" href="$memory__8080_8h.html" title="Memory abstraction for 8080 cpu." alt="" coords="41,155,154,181"/>
+</map>
