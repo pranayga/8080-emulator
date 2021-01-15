@@ -35,7 +35,7 @@ CFLAGS += $(OPTIMIZATION) $(DEFINE_MACROS)
 
 
 ######### Main Build ##################
-.PHONY: run debug build setup compile clean doc extractROM install
+.PHONY: run debug build setup compile clean doc extractROM install docs
 
 run: build
 	@printf "Running invaders\n==================\n"
@@ -62,7 +62,11 @@ $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o: $(SRC_DIR)/cpu_8080.c $(DEPS)
 ######### Dependency Install ##########
 install:
 	sudo apt update
-	sudo apt install build-essential unzip libsdl2-2.0
+	sudo apt install build-essential unzip libsdl2-dev
+
+######### Make Docs ###################
+docs: setup
+	doxygen docs/Doxyfile
 
 ######### RPM Extraction Rules ########
 setup:
@@ -80,3 +84,4 @@ extractROM: invaders.zip
 clean:
 	-rm invaders
 	-rm -rf $(BUILD_DIR) core
+	-rm doxygen_warning

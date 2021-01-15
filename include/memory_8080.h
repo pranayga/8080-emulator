@@ -5,8 +5,6 @@
  * @version 0.1
  * @date 2020-12-24
  * 
- * @copyright Copyright (c) 2020
- * 
  */
 #ifndef MEMORY_8080_H
 #define MEMORY_8080_H
@@ -18,7 +16,7 @@
  * 
  */
 typedef struct {
-    void* base;
+    void* base; /**< Base virtual memory, 64KB aligned */
 } v_memory;
 
 /**

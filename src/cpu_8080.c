@@ -5,8 +5,6 @@
  * @version 0.1
  * @date 2020-12-20
  * 
- * @copyright Copyright (c) 2020
- * 
  */
 
 #include <stdlib.h>
@@ -84,12 +82,29 @@ int decompile_inst(cpu_state* cpu, uint16_t* next_inst){
     int ret = opcode_lookup[Instt].target_func(cpu, inital_pc_ptr, Instt);
     return ret;
 }
-
+/**
+ * @brief Default function for IO_WRAP
+ * This function would be triggered on an `OUT`
+ * instruction. Usually overriden by the caller
+ * during setup
+ * 
+ * @param port 
+ * @param data 
+ */
 void io_machine_OUT(UNUSED uint8_t port, UNUSED uint8_t data){
     DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_OUT");
     return;
 }
 
+/**
+ * @brief Default function for IO_WRAP
+ * This function would be triggered on an `IN`
+ * instruction. Usually overriden by the caller
+ * during setup
+ * 
+ * @param port 
+ * @return uint8_t 
+ */
 uint8_t io_machine_IN(UNUSED uint8_t port){
     DEBUG_PRINT("%s\n", "UNINPLEMENTED MACHINE_IN");
     return 0x0;

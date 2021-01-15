@@ -1,3 +1,11 @@
+/**
+ * @file space.h
+ * @author Pranay Garg (pranayga@andrew.cmu.edu)
+ * @brief File containing #defines for spaceinvaders wrapper
+ * @version 0.1
+ * @date 2021-01-14
+ * 
+ */
 #ifndef SPACE_H
 #define SPACE_H
 
@@ -36,13 +44,13 @@
  * 
  */
 typedef struct {
-    SDL_Window *window;     /** SDL Window Pointer */
+    SDL_Window *window;     /**< SDL Window Pointer */
     /** SDL surface corresponding to the SDL Window */
     SDL_Surface *surf;      
-    uint32_t* pixels;       /** Pixels below surf. Chnages on Resize */
-    uint8_t quit_event;     /** quit event triggered */
-    SDL_Event event;        /** temp event under processing */
-    SDL_TimerID vram_timer; /** vram_time to trigger at VRAM_DELAY */
+    uint32_t* pixels;       /**< Pixels below surf. Chnages on Resize */
+    uint8_t quit_event;     /**< quit event triggered */
+    SDL_Event event;        /**< temp event under processing */
+    SDL_TimerID vram_timer; /**< vram_time to trigger at VRAM_DELAY */
 } invaders_window;
 
 /**
@@ -63,14 +71,14 @@ typedef struct {
     ///@}
 
     // Shift Regs
-    uint8_t shift_config;   /** Shift Reg config to control Port 2 reads */
+    uint8_t shift_config;   /**< Shift Reg config to control Port 2 reads */
     /** Union to redirect Port 4 writes and Port 2 reads */
     union{
         struct{
-            uint8_t y;      /** least significant byte */
-            uint8_t x;      /** most significant byte  */
+            uint8_t y;      /**< least significant byte */
+            uint8_t x;      /**< most significant byte  */
         };
-        uint16_t hidden_reg;    /** abstracted 15 byte register */
+        uint16_t hidden_reg;    /**< abstracted 15 byte register */
     };
 } port_IO;
 
@@ -136,7 +144,7 @@ void render_vram(cpu_state *cpu, uint32_t *pixels);
  * @param param NULL
  * @return uint32_t Interval
  */
-uint32_t update_vram_cb(uint32_t interval, void *param);
+uint32_t update_vram_cb(uint32_t interval, UNUSED void *param);
 
 /**
  * @brief Initializes the SDL game window

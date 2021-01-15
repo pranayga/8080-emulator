@@ -5,8 +5,6 @@
  * @version 0.1
  * @date 2020-12-24
  * 
- * @copyright Copyright (c) 2020
- * 
  */
 #ifndef OPCODES_8080_H
 #define OPCODES_8080_H
@@ -15,6 +13,7 @@
 #include "cpu_8080.h"
 #include "memory_8080.h"
 
+/** Macro to print about Illegal Operation */
 #define ILLEGAL_OP DEBUG_PRINT("%s\n", "Illegal OP!");
 
 /**
@@ -1424,7 +1423,13 @@ int SPHL_WRAP(cpu_state* cpu, UNUSED uint16_t base_PC, UNUSED uint8_t op_code){
     return 1;
 }
 
-
+/**
+ * @brief A jump table indexed by an Intel 8080 instruction
+ * opcode, containing:
+ * - functor = function pointer
+ * - cycle_count = number of instruction it takes 8080 to exec
+ * - Instruction length [1,3]
+ */
 instt_8080_op opcode_lookup[0x100] = {
     [0x00] = {.target_func = NOP_WRAP, .cycle_count = 4, .size = 1},   // NOP Instruction
     [0x01] = {LXI_WRAP, 10, 3},

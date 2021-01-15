@@ -6,8 +6,6 @@
  * @version 0.1
  * @date 2020-12-20
  * 
- * @copyright Copyright (c) 2020
- * 
  */
 
 #ifndef _DEBUG_H_
@@ -47,7 +45,7 @@
  *
  * @param      ...   Variadic unused, removed by compiler
  */
-//{@
+//@{
 #define DEBUG_PRINT( ... ) do {} while( 0 );
 #define WARN( ... ) do {} while( 0 );
 //@}
