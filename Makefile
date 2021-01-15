@@ -62,7 +62,7 @@ $(BUILD_DIR)/$(OBJ_DIR)/cpu_8080.o: $(SRC_DIR)/cpu_8080.c $(DEPS)
 ######### Dependency Install ##########
 install:
 	sudo apt update
-	sudo apt install build-essential unzip libsdl2-2.0
+	sudo apt install build-essential unzip libsdl2-dev
 
 ######### Make Docs ###################
 docs: setup
