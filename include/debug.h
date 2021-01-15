@@ -47,7 +47,7 @@
  *
  * @param      ...   Variadic unused, removed by compiler
  */
-//{@
+//@{
 #define DEBUG_PRINT( ... ) do {} while( 0 );
 #define WARN( ... ) do {} while( 0 );
 //@}

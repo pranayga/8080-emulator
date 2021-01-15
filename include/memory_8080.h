@@ -18,7 +18,7 @@
  * 
  */
 typedef struct {
-    void* base;
+    void* base; /**< Base virtual memory, 64KB aligned */
 } v_memory;
 
 /**

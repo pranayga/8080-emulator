@@ -24,6 +24,13 @@
 
 static port_IO space_docks;
 
+/**
+ * @brief main emulator driver. Creates the vCPU 
+ * and game window instances
+ * 
+ * @return int 0 if success, else error code
+ */
+
 int main(){
     DEBUG_PRINT("%s\n", "PRKS 8080 Emulator to run Space Invaders....");
     
@@ -243,7 +250,7 @@ void process_key_event(SDL_KeyboardEvent key_event){
 
 /***** SDL Helpers ***/
 
-void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
+void process_SDL_event(cpu_state *cpu, invaders_window *game_window){
     switch (game_window->event.type)
     {
     case SDL_QUIT:
@@ -276,7 +283,7 @@ void process_SDL_event(UNUSED cpu_state *cpu, invaders_window *game_window){
     }
 }
 
-uint32_t update_vram_cb(UNUSED uint32_t interval, UNUSED void *param){
+uint32_t update_vram_cb(uint32_t interval, UNUSED void *param){
     static uintptr_t update_state = half_1;
 
     SDL_Event event;
@@ -324,7 +331,7 @@ void render_vram(cpu_state *cpu, uint32_t *pixels){
     }
 }
 
-void set_pixel(uint32_t *pixels, uint32_t x, uint32_t y, UNUSED uint8_t state){
+void set_pixel(uint32_t *pixels, uint32_t x, uint32_t y, uint8_t state){
     pixels[x + y * WINDOW_WIDTH] = state ? GREEN_PIXEL : BLACK_PIXEL;
 }
 
