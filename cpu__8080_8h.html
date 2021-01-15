@@ -117,8 +117,7 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:addf5ec070e9499d36b7f2009ce736076"><td class="memItemLeft" align="right" valign="top"><a id="addf5ec070e9499d36b7f2009ce736076"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>UNUSED</b>&#160;&#160;&#160;__attribute__((unused))</td></tr>
+<tr class="memitem:addf5ec070e9499d36b7f2009ce736076"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a>&#160;&#160;&#160;__attribute__((unused))</td></tr>
 <tr class="separator:addf5ec070e9499d36b7f2009ce736076"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abebd6b4e1c3784162100294513ec8237"><td class="memItemLeft" align="right" valign="top"><a id="abebd6b4e1c3784162100294513ec8237"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu__8080_8h.html#abebd6b4e1c3784162100294513ec8237">ALL_BUT_AUX_FLAG</a>&#160;&#160;&#160;(SIGN_FLAG | ZERO_FLAG | PARITY_FLAG | CARRY_FLAG)</td></tr>
@@ -139,7 +138,7 @@ Enumerations</h2></td></tr>
 <tr class="memdesc:a49003697fc6edfb6ba50009545fe3f40"><td class="mdescLeft">&#160;</td><td class="mdescRight">ENUMS for PSW_FLAGS. <br /></td></tr>
 <tr class="separator:a49003697fc6edfb6ba50009545fe3f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a206cb7924894edff9ab0954a5d3f010a"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu__8080_8h.html#a206cb7924894edff9ab0954a5d3f010a">condition_flags</a> { <br />
-&#160;&#160;<b>NZ_check</b> = 0x0
+&#160;&#160;<a class="el" href="cpu__8080_8h.html#a206cb7924894edff9ab0954a5d3f010aa9a4b4d0d4f39059992961989e10af355">NZ_check</a> = 0x0
 , <a class="el" href="cpu__8080_8h.html#a206cb7924894edff9ab0954a5d3f010aad7b86059c3f44aa2229ac696c9707597">Z_check</a> = 0x1
 , <a class="el" href="cpu__8080_8h.html#a206cb7924894edff9ab0954a5d3f010aa5c9afc5cd990786873b6f7c06931be90">NC_check</a> = 0x2
 , <a class="el" href="cpu__8080_8h.html#a206cb7924894edff9ab0954a5d3f010aad17c78def6600a57fb2576460db82ed4">C_check</a> = 0x3
@@ -180,7 +179,23 @@ Functions</h2></td></tr>
 <dl class="section version"><dt>Version</dt><dd>0.1 </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2020-12-20</dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2020 (CC0) </dd></dl>
-</div><h2 class="groupheader">Enumeration Type Documentation</h2>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="addf5ec070e9499d36b7f2009ce736076"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addf5ec070e9499d36b7f2009ce736076">&#9670;&nbsp;</a></span>UNUSED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define UNUSED&#160;&#160;&#160;__attribute__((unused))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>GCC header for unused variables Werror bypass </p>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a206cb7924894edff9ab0954a5d3f010a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a206cb7924894edff9ab0954a5d3f010a">&#9670;&nbsp;</a></span>condition_flags</h2>
 
@@ -195,19 +210,21 @@ Functions</h2></td></tr>
 
 <p>different condition checks for JMP, conditional OPS </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aad7b86059c3f44aa2229ac696c9707597"></a>Z_check&#160;</td><td class="fielddoc"><p>not zero (Z = 0) </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aa9a4b4d0d4f39059992961989e10af355"></a>NZ_check&#160;</td><td class="fielddoc"><p>not zero (Z = 0) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aa5c9afc5cd990786873b6f7c06931be90"></a>NC_check&#160;</td><td class="fielddoc"><p>zero (2 = 1) </p>
+<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aad7b86059c3f44aa2229ac696c9707597"></a>Z_check&#160;</td><td class="fielddoc"><p>zero (2 = 1) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aad17c78def6600a57fb2576460db82ed4"></a>C_check&#160;</td><td class="fielddoc"><p>no carry (CY = 0) </p>
+<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aa5c9afc5cd990786873b6f7c06931be90"></a>NC_check&#160;</td><td class="fielddoc"><p>no carry (CY = 0) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aa854814b8825a2d963d468848a99481d1"></a>PO_check&#160;</td><td class="fielddoc"><p>carry (CY = 1) </p>
+<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aad17c78def6600a57fb2576460db82ed4"></a>C_check&#160;</td><td class="fielddoc"><p>carry (CY = 1) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aad815cae3f0b5eacdb831113ee6a2fb0e"></a>PE_check&#160;</td><td class="fielddoc"><p>parity odd (P = 0) </p>
+<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aa854814b8825a2d963d468848a99481d1"></a>PO_check&#160;</td><td class="fielddoc"><p>parity odd (P = 0) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aa586dd8985c4d6f00d1c996ea6bd49ba5"></a>P_check&#160;</td><td class="fielddoc"><p>parity even (P = 1) </p>
+<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aad815cae3f0b5eacdb831113ee6a2fb0e"></a>PE_check&#160;</td><td class="fielddoc"><p>parity even (P = 1) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aabbd68db9a558c736536ccfdac7d74269"></a>M_check&#160;</td><td class="fielddoc"><p>plus (Sign = 0) </p>
+<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aa586dd8985c4d6f00d1c996ea6bd49ba5"></a>P_check&#160;</td><td class="fielddoc"><p>plus (Sign = 0) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a206cb7924894edff9ab0954a5d3f010aabbd68db9a558c736536ccfdac7d74269"></a>M_check&#160;</td><td class="fielddoc"><p>minus(Sign = 1) </p>
 </td></tr>
 </table>
 

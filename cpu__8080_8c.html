@@ -109,11 +109,11 @@ Functions</h2></td></tr>
 <tr class="memitem:a96d804d06fba8a45c824fa24f221c607"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu__8080_8c.html#a96d804d06fba8a45c824fa24f221c607">decompile_inst</a> (<a class="el" href="structcpu__state.html">cpu_state</a> *cpu, uint16_t *next_inst)</td></tr>
 <tr class="memdesc:a96d804d06fba8a45c824fa24f221c607"><td class="mdescLeft">&#160;</td><td class="mdescRight">Recompile mode.  <a href="cpu__8080_8c.html#a96d804d06fba8a45c824fa24f221c607">More...</a><br /></td></tr>
 <tr class="separator:a96d804d06fba8a45c824fa24f221c607"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af783a25ff5295acd6d1206aa2742eebe"><td class="memItemLeft" align="right" valign="top"><a id="af783a25ff5295acd6d1206aa2742eebe"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>io_machine_OUT</b> (UNUSED uint8_t port, UNUSED uint8_t data)</td></tr>
+<tr class="memitem:af783a25ff5295acd6d1206aa2742eebe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu__8080_8c.html#af783a25ff5295acd6d1206aa2742eebe">io_machine_OUT</a> (<a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> uint8_t port, <a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> uint8_t data)</td></tr>
+<tr class="memdesc:af783a25ff5295acd6d1206aa2742eebe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default function for IO_WRAP This function would be triggered on an <code>OUT</code> instruction. Usually overriden by the caller during setup.  <a href="cpu__8080_8c.html#af783a25ff5295acd6d1206aa2742eebe">More...</a><br /></td></tr>
 <tr class="separator:af783a25ff5295acd6d1206aa2742eebe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa692e55885c9e68291de210c5326985"><td class="memItemLeft" align="right" valign="top"><a id="afa692e55885c9e68291de210c5326985"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>io_machine_IN</b> (UNUSED uint8_t port)</td></tr>
+<tr class="memitem:afa692e55885c9e68291de210c5326985"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu__8080_8c.html#afa692e55885c9e68291de210c5326985">io_machine_IN</a> (<a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> uint8_t port)</td></tr>
+<tr class="memdesc:afa692e55885c9e68291de210c5326985"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default function for IO_WRAP This function would be triggered on an <code>IN</code> instruction. Usually overriden by the caller during setup.  <a href="cpu__8080_8c.html#afa692e55885c9e68291de210c5326985">More...</a><br /></td></tr>
 <tr class="separator:afa692e55885c9e68291de210c5326985"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5225b3b321938b673d183081fd842251"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cpu__8080_8c.html#a5225b3b321938b673d183081fd842251">print_state</a> (const <a class="el" href="structcpu__state.html">cpu_state</a> cpu)</td></tr>
 <tr class="memdesc:a5225b3b321938b673d183081fd842251"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the state of CPU.  <a href="cpu__8080_8c.html#a5225b3b321938b673d183081fd842251">More...</a><br /></td></tr>
@@ -239,6 +239,70 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>io_machine_IN</b> 
 </ul>
 </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>cpu_state* </dd></dl>
+
+</div>
+</div>
+<a id="afa692e55885c9e68291de210c5326985"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa692e55885c9e68291de210c5326985">&#9670;&nbsp;</a></span>io_machine_IN()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t io_machine_IN </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> uint8_t&#160;</td>
+          <td class="paramname"><em>port</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default function for IO_WRAP This function would be triggered on an <code>IN</code> instruction. Usually overriden by the caller during setup. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>uint8_t </dd></dl>
+
+</div>
+</div>
+<a id="af783a25ff5295acd6d1206aa2742eebe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af783a25ff5295acd6d1206aa2742eebe">&#9670;&nbsp;</a></span>io_machine_OUT()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void io_machine_OUT </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> uint8_t&#160;</td>
+          <td class="paramname"><em>port</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> uint8_t&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default function for IO_WRAP This function would be triggered on an <code>OUT</code> instruction. Usually overriden by the caller during setup. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td></td></tr>
+    <tr><td class="paramname">data</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

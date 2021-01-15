@@ -113,8 +113,8 @@ Include dependency graph for space.c:</div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top"><a id="ae66f6b31b5ad750f1fe042a706a4e3d4"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>main</b> ()</td></tr>
+<tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
+<tr class="memdesc:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">main emulator driver. Creates the vCPU and game window instances  <a href="space_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4">More...</a><br /></td></tr>
 <tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ec5daa6156168e9456a44fd3bce5da5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#a5ec5daa6156168e9456a44fd3bce5da5">copy_invaders_rom</a> (char *path, <a class="el" href="structcpu__state.html">cpu_state</a> *cpu)</td></tr>
 <tr class="memdesc:a5ec5daa6156168e9456a44fd3bce5da5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies the invaders ROM into the correct memory locations. The way memory is mapped is documented at: <a href="http://www.emutalk.net/threads/38177-Space-Invaders">http://www.emutalk.net/threads/38177-Space-Invaders</a>.  <a href="space_8c.html#a5ec5daa6156168e9456a44fd3bce5da5">More...</a><br /></td></tr>
@@ -128,18 +128,18 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>main</b> ()</td></tr>
 <tr class="memitem:a5656cd88a9a2e88f0bcae014d24258a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#a5656cd88a9a2e88f0bcae014d24258a2">process_key_event</a> (SDL_KeyboardEvent key_event)</td></tr>
 <tr class="memdesc:a5656cd88a9a2e88f0bcae014d24258a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">processes a key_event by setting the IO_Ports in order to pass the input into the CPU state  <a href="space_8c.html#a5656cd88a9a2e88f0bcae014d24258a2">More...</a><br /></td></tr>
 <tr class="separator:a5656cd88a9a2e88f0bcae014d24258a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3445057b3c8ec8f87a773753b8b95714"><td class="memItemLeft" align="right" valign="top"><a id="a3445057b3c8ec8f87a773753b8b95714"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>process_SDL_event</b> (UNUSED <a class="el" href="structcpu__state.html">cpu_state</a> *cpu, <a class="el" href="structinvaders__window.html">invaders_window</a> *game_window)</td></tr>
-<tr class="separator:a3445057b3c8ec8f87a773753b8b95714"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65c06d3b2ea4b7f2c338515b3776566d"><td class="memItemLeft" align="right" valign="top"><a id="a65c06d3b2ea4b7f2c338515b3776566d"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>update_vram_cb</b> (UNUSED uint32_t interval, UNUSED void *param)</td></tr>
-<tr class="separator:a65c06d3b2ea4b7f2c338515b3776566d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2344983e99182e40b95a79431dbd0672"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#a2344983e99182e40b95a79431dbd0672">process_SDL_event</a> (<a class="el" href="structcpu__state.html">cpu_state</a> *cpu, <a class="el" href="structinvaders__window.html">invaders_window</a> *game_window)</td></tr>
+<tr class="memdesc:a2344983e99182e40b95a79431dbd0672"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the incoming SDL event. Called whenever a new event is seen during the polling process.  <a href="space_8c.html#a2344983e99182e40b95a79431dbd0672">More...</a><br /></td></tr>
+<tr class="separator:a2344983e99182e40b95a79431dbd0672"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4db9b54eb2919a9baeb772fac2e44d4"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#af4db9b54eb2919a9baeb772fac2e44d4">update_vram_cb</a> (uint32_t interval, <a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> void *param)</td></tr>
+<tr class="memdesc:af4db9b54eb2919a9baeb772fac2e44d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">callback which is triggered when scan line reaches 1/2 of the display, or at 120Hz  <a href="space_8c.html#af4db9b54eb2919a9baeb772fac2e44d4">More...</a><br /></td></tr>
+<tr class="separator:af4db9b54eb2919a9baeb772fac2e44d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81bd4edd6a29e6cb51271d2ae9c291ae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#a81bd4edd6a29e6cb51271d2ae9c291ae">render_vram</a> (<a class="el" href="structcpu__state.html">cpu_state</a> *cpu, uint32_t *pixels)</td></tr>
 <tr class="memdesc:a81bd4edd6a29e6cb51271d2ae9c291ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Renders the Vram into the surface Pixel.  <a href="space_8c.html#a81bd4edd6a29e6cb51271d2ae9c291ae">More...</a><br /></td></tr>
 <tr class="separator:a81bd4edd6a29e6cb51271d2ae9c291ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a32c81bcf0c6f398393ef1d04655bf638"><td class="memItemLeft" align="right" valign="top"><a id="a32c81bcf0c6f398393ef1d04655bf638"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_pixel</b> (uint32_t *pixels, uint32_t x, uint32_t y, UNUSED uint8_t state)</td></tr>
-<tr class="separator:a32c81bcf0c6f398393ef1d04655bf638"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a1e4cf47ac86ac4c93c43c4b067eed0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#a0a1e4cf47ac86ac4c93c43c4b067eed0">set_pixel</a> (uint32_t *pixels, uint32_t x, uint32_t y, uint8_t state)</td></tr>
+<tr class="memdesc:a0a1e4cf47ac86ac4c93c43c4b067eed0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the pixel object to a static value.  <a href="space_8c.html#a0a1e4cf47ac86ac4c93c43c4b067eed0">More...</a><br /></td></tr>
+<tr class="separator:a0a1e4cf47ac86ac4c93c43c4b067eed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae7dcf7aac3322a2f3560dc427018d29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structinvaders__window.html">invaders_window</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="space_8c.html#aae7dcf7aac3322a2f3560dc427018d29">init_game_window</a> ()</td></tr>
 <tr class="memdesc:aae7dcf7aac3322a2f3560dc427018d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes the SDL game window.  <a href="space_8c.html#aae7dcf7aac3322a2f3560dc427018d29">More...</a><br /></td></tr>
 <tr class="separator:aae7dcf7aac3322a2f3560dc427018d29"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -238,6 +238,26 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_pixel</b> (uint32
 
 </div>
 </div>
+<a id="ae66f6b31b5ad750f1fe042a706a4e3d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae66f6b31b5ad750f1fe042a706a4e3d4">&#9670;&nbsp;</a></span>main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int main </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>main emulator driver. Creates the vCPU and game window instances </p>
+<dl class="section return"><dt>Returns</dt><dd>int 0 if success, else error code </dd></dl>
+
+</div>
+</div>
 <a id="a5656cd88a9a2e88f0bcae014d24258a2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5656cd88a9a2e88f0bcae014d24258a2">&#9670;&nbsp;</a></span>process_key_event()</h2>
 
@@ -258,6 +278,43 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_pixel</b> (uint32
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key_event</td><td>the key event being pressed/released </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a2344983e99182e40b95a79431dbd0672"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2344983e99182e40b95a79431dbd0672">&#9670;&nbsp;</a></span>process_SDL_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void process_SDL_event </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structcpu__state.html">cpu_state</a> *&#160;</td>
+          <td class="paramname"><em>cpu</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structinvaders__window.html">invaders_window</a> *&#160;</td>
+          <td class="paramname"><em>game_window</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Process the incoming SDL event. Called whenever a new event is seen during the polling process. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cpu</td><td>to modify using the event </td></tr>
+    <tr><td class="paramname">game_window</td><td>relating to the generated event </td></tr>
   </table>
   </dd>
 </dl>
@@ -295,6 +352,57 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_pixel</b> (uint32
   <table class="params">
     <tr><td class="paramname">cpu</td><td>cpu emulating the game </td></tr>
     <tr><td class="paramname">pixels</td><td>underlying uint32_t[] pointer for the SDL surface </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0a1e4cf47ac86ac4c93c43c4b067eed0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a1e4cf47ac86ac4c93c43c4b067eed0">&#9670;&nbsp;</a></span>set_pixel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_pixel </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>pixels</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>state</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the pixel object to a static value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pixels</td><td>underlying uint32_t[] pointer for the SDL surface </td></tr>
+    <tr><td class="paramname">x</td><td>index to update </td></tr>
+    <tr><td class="paramname">y</td><td>index to update </td></tr>
+    <tr><td class="paramname">state</td><td>0 for OFF, 1 for ON </td></tr>
   </table>
   </dd>
 </dl>
@@ -364,6 +472,44 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_pixel</b> (uint32
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="af4db9b54eb2919a9baeb772fac2e44d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4db9b54eb2919a9baeb772fac2e44d4">&#9670;&nbsp;</a></span>update_vram_cb()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t update_vram_cb </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>interval</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="cpu__8080_8h.html#addf5ec070e9499d36b7f2009ce736076">UNUSED</a> void *&#160;</td>
+          <td class="paramname"><em>param</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>callback which is triggered when scan line reaches 1/2 of the display, or at 120Hz </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">interval</td><td>Interval to trigger at </td></tr>
+    <tr><td class="paramname">param</td><td>NULL </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>uint32_t Interval </dd></dl>
 
 </div>
 </div>

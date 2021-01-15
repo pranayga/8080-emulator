@@ -78,21 +78,18 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a24d7549baff34a0db5cc19453634f0a6"><td class="memItemLeft" align="right" valign="top"><a id="a24d7549baff34a0db5cc19453634f0a6"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>shift_config</b></td></tr>
+<tr class="memitem:a24d7549baff34a0db5cc19453634f0a6"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structport__IO.html#a24d7549baff34a0db5cc19453634f0a6">shift_config</a></td></tr>
 <tr class="separator:a24d7549baff34a0db5cc19453634f0a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73d53fba9815e15d8b164a1dc8ff3922"><td class="memItemLeft" >union {</td></tr>
 <tr class="memitem:adc493bf5b8368d05c1d55640363ed4e6"><td class="memItemLeft" ><a id="adc493bf5b8368d05c1d55640363ed4e6"></a>
 &#160;&#160;&#160;struct {</td></tr>
-<tr class="memitem:acddc4c009bf1670e5451085a5c9ab634"><td class="memItemLeft" >
-&#160;&#160;&#160;&#160;&#160;&#160;uint8_t&#160;&#160;&#160;<b>y</b></td></tr>
+<tr class="memitem:acddc4c009bf1670e5451085a5c9ab634"><td class="memItemLeft" >&#160;&#160;&#160;&#160;&#160;&#160;uint8_t&#160;&#160;&#160;<a class="el" href="structport__IO.html#a310dbfb278273ae200e47889144bea77">y</a></td></tr>
 <tr class="separator:acddc4c009bf1670e5451085a5c9ab634"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d1c9c8ee9f4b1c13d4923f598282a4f"><td class="memItemLeft" >&#160;&#160;&#160;&#160;&#160;&#160;uint8_t&#160;&#160;&#160;<a class="el" href="structport__IO.html#a7558eb767a7f5bb08646597221b4e716">x</a></td></tr>
 <tr class="separator:a3d1c9c8ee9f4b1c13d4923f598282a4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc493bf5b8368d05c1d55640363ed4e6"><td class="memItemLeft" valign="top">&#160;&#160;&#160;}&#160;</td><td class="memItemRight" valign="bottom"></td></tr>
 <tr class="separator:adc493bf5b8368d05c1d55640363ed4e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1f5d96756431a0004c575a41576c432"><td class="memItemLeft" >
-&#160;&#160;&#160;uint16_t&#160;&#160;&#160;<b>hidden_reg</b></td></tr>
+<tr class="memitem:aa1f5d96756431a0004c575a41576c432"><td class="memItemLeft" >&#160;&#160;&#160;uint16_t&#160;&#160;&#160;<a class="el" href="structport__IO.html#a047b1d27fcd7a84990f3cf896e15ded7">hidden_reg</a></td></tr>
 <tr class="separator:aa1f5d96756431a0004c575a41576c432"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a73d53fba9815e15d8b164a1dc8ff3922"><td class="memItemLeft" valign="top">};&#160;</td><td class="memItemRight" valign="bottom"></td></tr>
 <tr class="separator:a73d53fba9815e15d8b164a1dc8ff3922"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,7 +123,22 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>port_5</b></td></t
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Shift Reg config to control Port 2 reads Union to redirect Port 4 writes and Port 2 reads </p>
+<p>Union to redirect Port 4 writes and Port 2 reads </p>
+
+</div>
+</div>
+<a id="a047b1d27fcd7a84990f3cf896e15ded7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a047b1d27fcd7a84990f3cf896e15ded7">&#9670;&nbsp;</a></span>hidden_reg</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t port_IO::hidden_reg</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>abstracted 15 byte register </p>
 
 </div>
 </div>
@@ -160,6 +172,21 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>port_5</b></td></t
 
 </div>
 </div>
+<a id="a24d7549baff34a0db5cc19453634f0a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24d7549baff34a0db5cc19453634f0a6">&#9670;&nbsp;</a></span>shift_config</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t port_IO::shift_config</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Shift Reg config to control Port 2 reads </p>
+
+</div>
+</div>
 <a id="a7558eb767a7f5bb08646597221b4e716"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7558eb767a7f5bb08646597221b4e716">&#9670;&nbsp;</a></span>x</h2>
 
@@ -168,6 +195,22 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>port_5</b></td></t
       <table class="memname">
         <tr>
           <td class="memname">uint8_t port_IO::x</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>most significant byte <br  />
+ </p>
+
+</div>
+</div>
+<a id="a310dbfb278273ae200e47889144bea77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a310dbfb278273ae200e47889144bea77">&#9670;&nbsp;</a></span>y</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t port_IO::y</td>
         </tr>
       </table>
 </div><div class="memdoc">
